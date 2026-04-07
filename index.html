@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Liga Piria Pádel Club 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #06090f; color: #dbeafe; font-family: 'Lato', sans-serif; min-height: 100vh; }
+    .bc { font-family: 'Barlow Condensed', sans-serif; }
+    input, select, button { font-family: inherit; }
+
+```
+/* LOGIN */
+#login-screen {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 40%, #0c1f3f 0%, transparent 60%);
+  padding: 1rem;
+}
+.login-box { text-align: center; width: 100%; max-width: 340px; }
+.login-logo { width: 160px; height: 160px; object-fit: contain; margin: 0 auto 0.5rem; display: block; }
+.login-subtitle { color: #4a6fa5; letter-spacing: 4px; font-size: 0.75rem; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 2rem; }
+.login-card { background: #0c1220; border: 1px solid #1a2840; border-radius: 16px; padding: 2rem; }
+.login-card p { color: #4a6fa5; font-size: 0.82rem; margin-bottom: 1.25rem; line-height: 1.6; }
+.btn-ver { background: #1d4ed8; color: white; border: none; border-radius: 8px; padding: 0.85rem; width: 100%; font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; letter-spacing: 2px; cursor: pointer; margin-bottom: 0.75rem; }
+.btn-admin { background: #7c3aed; color: white; border: none; border-radius: 8px; padding: 0.85rem; width: 100%; font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; letter-spacing: 2px; cursor: pointer; }
+.login-note { color: #4a6fa5; font-size: 0.7rem; margin-top: 1rem; line-height: 1.5; }
+.login-title-small { color: #a78bfa; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 1rem; }
+.form-label { display: block; color: #4a6fa5; font-family: 'Barlow Condensed', sans-serif; font-size: 0.68rem; letter-spacing: 2px; margin-bottom: 0.3rem; text-align: left; }
+.form-input { background: #06090f; border: 1px solid #1a2840; border-radius: 8px; padding: 0.55rem 0.8rem; color: #dbeafe; font-size: 0.9rem; width: 100%; outline: none; margin-bottom: 0.75rem; }
+.error-msg { color: #f87171; font-size: 0.8rem; margin-bottom: 0.75rem; }
+.btn-back { background: none; border: none; color: #4a6fa5; cursor: pointer; font-size: 0.8rem; width: 100%; margin-top: 0.5rem; }
+
+/* HEADER */
+header {
+  background: rgba(12,18,32,0.95); border-bottom: 1px solid #1a2840;
+  padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px);
+}
+.header-left { display: flex; align-items: center; gap: 0.75rem; }
+.header-logo { width: 42px; height: 42px; object-fit: contain; }
+.header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; letter-spacing: 3px; font-weight: 800; line-height: 1; }
+.header-sub { font-size: 0.65rem; color: #4a6fa5; letter-spacing: 3px; }
+.header-right { display: flex; align-items: center; gap: 0.75rem; }
+.badge-admin { background: rgba(124,58,237,0.13); border: 1px solid #7c3aed; color: #a78bfa; padding: 2px 10px; border-radius: 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 1px; }
+.btn-salir { background: none; border: 1px solid #1a2840; color: #4a6fa5; padding: 0.25rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.72rem; }
+
+/* TABS GRUPOS */
+.grupo-tabs { background: #0c1220; border-bottom: 1px solid #1a2840; padding: 0 1rem; display: flex; overflow-x: auto; }
+.grupo-tab { background: none; border: none; padding: 1rem 1.2rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; letter-spacing: 2px; color: #4a6fa5; border-bottom: 3px solid transparent; white-space: nowrap; transition: color 0.2s; }
+.grupo-tab.active { border-bottom-color: var(--color); color: var(--color); }
+
+/* MAIN */
+main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+.grupo-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.grupo-bar { width: 4px; height: 36px; border-radius: 2px; background: var(--color); }
+.grupo-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; letter-spacing: 3px; font-weight: 700; }
+.grupo-sub { color: #4a6fa5; font-size: 0.78rem; }
+.readonly-banner { background: rgba(26,40,64,0.5); border: 1px solid #1a2840; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: #4a6fa5; }
+
+/* SUB TABS */
+.sub-tabs { display: flex; border-bottom: 1px solid #1a2840; margin-bottom: 1.5rem; }
+.sub-tab { background: none; border: none; padding: 0.75rem 1.5rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; letter-spacing: 2px; color: #4a6fa5; border-bottom: 2px solid transparent; }
+.sub-tab.active { color: var(--color); border-bottom-color: var(--color); }
+
+/* FECHAS */
+.fechas { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.fecha-btn { background: #0c1220; color: #4a6fa5; border: 1px solid #1a2840; padding: 0.35rem 0.9rem; border-radius: 20px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.2s; }
+.fecha-btn.active { background: var(--color); color: white; border-color: var(--color); }
+
+/* CRUCES GRID */
+.cruces-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.cruce-card { background: #0c1220; border: 1px solid #1a2840; border-radius: 12px; padding: 1.1rem; cursor: default; transition: transform 0.15s; }
+.cruce-card.admin { cursor: pointer; }
+.cruce-card.admin:hover { transform: translateY(-2px); }
+.cruce-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+.cruce-fecha-label { font-size: 0.75rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 2px; color: #4a6fa5; }
+.cruce-badge { font-size: 0.65rem; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; padding: 2px 8px; border-radius: 10px; }
+.cruce-parejas { font-size: 0.9rem; line-height: 1.6; }
+.cruce-vs { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 3px; margin: 2px 0; color: var(--color); }
+.cruce-pareja { font-weight: 600; color: #dbeafe; }
+.cruce-pareja.ganador { color: var(--color); }
+.cruce-info { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #1a2840; font-size: 0.8rem; color: #4a6fa5; display: flex; gap: 1rem; flex-wrap: wrap; }
+.cruce-resultado { margin-top: 0.5rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; letter-spacing: 1px; color: var(--color); }
+.cruce-edit-hint { margin-top: 0.6rem; font-size: 0.7rem; color: #4a6fa5; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; }
+
+/* TABLA */
+.tabla-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 400px; }
+th { padding: 0.5rem 0.75rem; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 2px; color: #4a6fa5; border-bottom: 1px solid #1a2840; }
+th.left { text-align: left; }
+th.center { text-align: center; }
+td { padding: 0.55rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid rgba(26,40,64,0.3); }
+td.center { text-align: center; }
+.td-pos { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; text-align: center; }
+.td-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; text-align: center; color: var(--color); }
+.td-gana { color: #4ade80; text-align: center; }
+.td-pierde { color: #f87171; text-align: center; }
+tr.top1 { background: rgba(0,0,0,0.1); }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+.modal-box { background: #0c1220; border-radius: 16px; padding: 2rem; width: 100%; max-width: 460px; }
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+.modal-partido-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; letter-spacing: 3px; color: #4a6fa5; margin-bottom: 0.3rem; }
+.modal-parejas { font-weight: 600; font-size: 0.95rem; line-height: 1.6; }
+.modal-vs { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 2px; }
+.btn-close { background: none; border: none; color: #4a6fa5; cursor: pointer; font-size: 1.4rem; }
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.modal-grid .full { grid-column: 1/-1; }
+.modal-section { border-top: 1px solid #1a2840; padding-top: 1rem; }
+.modal-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 0.75rem; }
+.ganador-btns { display: flex; gap: 0.5rem; }
+.ganador-btn { flex: 1; background: #1a2840; color: #4a6fa5; border: 1px solid #1a2840; border-radius: 8px; padding: 0.5rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; transition: all 0.2s; }
+.ganador-btn.active { color: white; }
+.modal-note { color: #4a6fa5; font-size: 0.72rem; margin-top: 0.75rem; }
+.modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+.btn-guardar { flex: 1; color: white; border: none; border-radius: 8px; padding: 0.65rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; letter-spacing: 1px; }
+.btn-cancelar { background: #1a2840; color: #4a6fa5; border: none; border-radius: 8px; padding: 0.65rem 1rem; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; }
+.modal-select { background: #06090f; border: 1px solid #1a2840; border-radius: 8px; padding: 0.55rem 0.8rem; color: #dbeafe; font-size: 0.9rem; width: 100%; outline: none; }
+
+/* FOOTER */
+footer { text-align: center; padding: 2rem; color: #4a6fa5; font-size: 0.75rem; letter-spacing: 2px; font-family: 'Barlow Condensed', sans-serif; }
+
+/* LOADING */
+#loading { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+.loading-text { color: #4a6fa5; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 3px; }
+
+.hidden { display: none !important; }
+```
+
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+
+<div id="loading">
+  <div class="loading-text">CARGANDO...</div>
+</div>
+
+<!-- LOGIN -->
+
+<div id="login-screen" class="hidden">
+  <div class="login-box">
+    <img src="https://i.ibb.co/SDC0SLVZ/564493e0-504f-4849-a934-c13354b00b0e.jpg"
+      alt="La Liga Piria Pádel Club" class="login-logo"
+      onerror="this.style.display='none'" />
+    <div class="login-subtitle">MARZO — MAYO 2026</div>
+    <div class="login-card">
+      <!-- Paso 1: elegir -->
+      <div id="step-choose">
+        <p>¿Cómo querés ingresar?</p>
+        <button class="btn-ver" onclick="loginVer()">👀 VER LA LIGA</button>
+        <button class="btn-admin" onclick="irAdmin()">🔑 ACCESO ADMIN</button>
+        <p class="login-note">Solo Felipe puede cargar fechas y resultados.</p>
+      </div>
+      <!-- Paso 2a: crear pin -->
+      <div id="step-pin-setup" class="hidden">
+        <div class="login-title-small">🔑 PRIMERA VEZ — CREÁ TU CONTRASEÑA</div>
+        <label class="form-label">CONTRASEÑA</label>
+        <input type="password" id="pin-new" class="form-input" placeholder="Mínimo 4 caracteres" />
+        <label class="form-label">CONFIRMAR</label>
+        <input type="password" id="pin-confirm" class="form-input" placeholder="Repetí la contraseña" onkeydown="if(event.key==='Enter')crearPin()" />
+        <div id="err-setup" class="error-msg hidden"></div>
+        <button class="btn-admin" onclick="crearPin()">CREAR CONTRASEÑA</button>
+        <button class="btn-back" onclick="volverLogin()">← Volver</button>
+      </div>
+      <!-- Paso 2b: ingresar pin -->
+      <div id="step-pin-enter" class="hidden">
+        <div class="login-title-small">🔑 ACCESO ADMIN — FELIPE</div>
+        <label class="form-label">CONTRASEÑA</label>
+        <input type="password" id="pin-input" class="form-input" placeholder="Tu contraseña" onkeydown="if(event.key==='Enter')verificarPin()" />
+        <div id="err-enter" class="error-msg hidden"></div>
+        <button class="btn-admin" onclick="verificarPin()">INGRESAR</button>
+        <button class="btn-back" onclick="volverLogin()">← Volver</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+
+<div id="app" class="hidden">
+  <header>
+    <div class="header-left">
+      <img src="https://i.ibb.co/SDC0SLVZ/564493e0-504f-4849-a934-c13354b00b0e.jpg"
+        alt="Logo" class="header-logo" onerror="this.style.display='none'" />
+      <div>
+        <div class="header-title bc">LIGA PIRIA PÁDEL</div>
+        <div class="header-sub">TEMPORADA MARZO–MAYO 2026</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="badge-admin" class="badge-admin hidden">🔑 ADMIN</span>
+      <button class="btn-salir" onclick="salir()">Salir</button>
+    </div>
+  </header>
+
+  <div class="grupo-tabs" id="grupo-tabs"></div>
+
+  <main>
+    <div class="grupo-header">
+      <div class="grupo-bar" id="grupo-bar"></div>
+      <div>
+        <div class="grupo-title bc" id="grupo-title"></div>
+        <div class="grupo-sub" id="grupo-sub">8 parejas · Round Robin · 7 fechas · Final 23 de Mayo</div>
+      </div>
+    </div>
+    <div id="readonly-banner" class="readonly-banner hidden">
+      👁 Modo lectura — Solo Felipe puede cargar fechas y resultados.
+    </div>
+    <div class="sub-tabs" id="sub-tabs">
+      <button class="sub-tab active" id="tab-cruces" onclick="setSubTab('cruces')">📅 CRUCES</button>
+      <button class="sub-tab" id="tab-tabla" onclick="setSubTab('tabla')">🏆 TABLA DE PUNTOS</button>
+    </div>
+    <div id="view-cruces"></div>
+    <div id="view-tabla" class="hidden"></div>
+  </main>
+
+  <footer>⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐</footer>
+</div>
+
+<!-- MODAL -->
+
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-partido-label">PARTIDO</div>
+        <div class="modal-parejas" id="modal-parejas"></div>
+      </div>
+      <button class="btn-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-grid">
+      <div class="full">
+        <label class="form-label">FECHA DEL PARTIDO</label>
+        <input type="date" id="m-fecha" class="form-input" />
+      </div>
+      <div>
+        <label class="form-label">HORA</label>
+        <input type="time" id="m-hora" class="form-input" value="10:00" />
+      </div>
+      <div>
+        <label class="form-label">CANCHA</label>
+        <select id="m-cancha" class="modal-select">
+          <option>Cancha 1</option>
+          <option>Cancha 2</option>
+          <option>Cancha 3</option>
+          <option>Cancha 4</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title" id="modal-res-title">RESULTADO</div>
+      <div style="margin-bottom:0.75rem">
+        <label class="form-label">SETS (ej: 6-3 / 4-6 / 7-5)</label>
+        <input type="text" id="m-resultado" class="form-input" placeholder="Sets..." />
+      </div>
+      <div>
+        <label class="form-label">GANADOR</label>
+        <div class="ganador-btns">
+          <button class="ganador-btn" id="btn-g1" onclick="setGanador('pareja1')"></button>
+          <button class="ganador-btn" id="btn-g2" onclick="setGanador('pareja2')"></button>
+        </div>
+      </div>
+      <div id="modal-note" class="modal-note hidden">🔒 Solo Felipe puede cargar resultados.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-guardar" id="btn-guardar" onclick="guardarCruce()">GUARDAR</button>
+      <button class="btn-cancelar" onclick="cerrarModal()">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBa76hda-u-Eq40y-EkAMOipYfHinSJ0u4",
+    authDomain: "la-liga-piria-padel.firebaseapp.com",
+    databaseURL: "https://la-liga-piria-padel-default-rtdb.firebaseio.com",
+    projectId: "la-liga-piria-padel",
+    storageBucket: "la-liga-piria-padel.firebasestorage.app",
+    messagingSenderId: "712687265351",
+    appId: "1:712687265351:web:cf2510550cf37dae593362"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // ── DATOS ──────────────────────────────────────────────────────
+  const GRUPOS = {
+    "G+7": {
+      label: "Liga Suma 7", color: "#f59e0b",
+      cruces: [
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Sebastián Morales / Santiago Mónaco"},{ p1:"Martín Dangelo / Iván Tomatis",p2:"Ignacio Zurdo / Damián Cotto"},{ p1:"Bruno Muñoz / Juan Goicoechea",p2:"Mauro Frattini / Felipe Muñoz"},{ p1:"Joaquín Domínguez / Francisco Larre",p2:"Laureano Fregueiro / Alberto Gasalla"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Martín Dangelo / Iván Tomatis"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Ignacio Zurdo / Damián Cotto"},{ p1:"Bruno Muñoz / Juan Goicoechea",p2:"Joaquín Domínguez / Francisco Larre"},{ p1:"Mauro Frattini / Felipe Muñoz",p2:"Laureano Fregueiro / Alberto Gasalla"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Ignacio Zurdo / Damián Cotto"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Martín Dangelo / Iván Tomatis"},{ p1:"Bruno Muñoz / Juan Goicoechea",p2:"Laureano Fregueiro / Alberto Gasalla"},{ p1:"Mauro Frattini / Felipe Muñoz",p2:"Joaquín Domínguez / Francisco Larre"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Bruno Muñoz / Juan Goicoechea"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Mauro Frattini / Felipe Muñoz"},{ p1:"Martín Dangelo / Iván Tomatis",p2:"Joaquín Domínguez / Francisco Larre"},{ p1:"Ignacio Zurdo / Damián Cotto",p2:"Laureano Fregueiro / Alberto Gasalla"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Mauro Frattini / Felipe Muñoz"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Bruno Muñoz / Juan Goicoechea"},{ p1:"Martín Dangelo / Iván Tomatis",p2:"Laureano Fregueiro / Alberto Gasalla"},{ p1:"Ignacio Zurdo / Damián Cotto",p2:"Joaquín Domínguez / Francisco Larre"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Joaquín Domínguez / Francisco Larre"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Laureano Fregueiro / Alberto Gasalla"},{ p1:"Martín Dangelo / Iván Tomatis",p2:"Bruno Muñoz / Juan Goicoechea"},{ p1:"Ignacio Zurdo / Damián Cotto",p2:"Mauro Frattini / Felipe Muñoz"}],
+        [{ p1:"Rodrigo Larrosa / Agustín Núñez",p2:"Laureano Fregueiro / Alberto Gasalla"},{ p1:"Sebastián Morales / Santiago Mónaco",p2:"Joaquín Domínguez / Francisco Larre"},{ p1:"Martín Dangelo / Iván Tomatis",p2:"Mauro Frattini / Felipe Muñoz"},{ p1:"Ignacio Zurdo / Damián Cotto",p2:"Bruno Muñoz / Juan Goicoechea"}],
+      ]
+    },
+    "G1+11": {
+      label: "Liga Suma 11 - Grupo 1", color: "#3b82f6",
+      cruces: [
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Fernando López / Mariana Silvera"},{ p1:"Agustín Fernández / Fabián Benítez",p2:"Paulina Morales / Gabriel Mateu"},{ p1:"Marcelo Pernin / Bruno Canabé",p2:"Gabriela Rodríguez / Gonzalo Silvera"},{ p1:"Agustina García / Carolina Zapata",p2:"Pablo Haitt / Carolina Montero"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Agustín Fernández / Fabián Benítez"},{ p1:"Fernando López / Mariana Silvera",p2:"Paulina Morales / Gabriel Mateu"},{ p1:"Marcelo Pernin / Bruno Canabé",p2:"Agustina García / Carolina Zapata"},{ p1:"Gabriela Rodríguez / Gonzalo Silvera",p2:"Pablo Haitt / Carolina Montero"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Paulina Morales / Gabriel Mateu"},{ p1:"Fernando López / Mariana Silvera",p2:"Agustín Fernández / Fabián Benítez"},{ p1:"Marcelo Pernin / Bruno Canabé",p2:"Pablo Haitt / Carolina Montero"},{ p1:"Gabriela Rodríguez / Gonzalo Silvera",p2:"Agustina García / Carolina Zapata"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Marcelo Pernin / Bruno Canabé"},{ p1:"Fernando López / Mariana Silvera",p2:"Gabriela Rodríguez / Gonzalo Silvera"},{ p1:"Agustín Fernández / Fabián Benítez",p2:"Agustina García / Carolina Zapata"},{ p1:"Paulina Morales / Gabriel Mateu",p2:"Pablo Haitt / Carolina Montero"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Gabriela Rodríguez / Gonzalo Silvera"},{ p1:"Fernando López / Mariana Silvera",p2:"Marcelo Pernin / Bruno Canabé"},{ p1:"Agustín Fernández / Fabián Benítez",p2:"Pablo Haitt / Carolina Montero"},{ p1:"Paulina Morales / Gabriel Mateu",p2:"Agustina García / Carolina Zapata"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Agustina García / Carolina Zapata"},{ p1:"Fernando López / Mariana Silvera",p2:"Pablo Haitt / Carolina Montero"},{ p1:"Agustín Fernández / Fabián Benítez",p2:"Marcelo Pernin / Bruno Canabé"},{ p1:"Paulina Morales / Gabriel Mateu",p2:"Gabriela Rodríguez / Gonzalo Silvera"}],
+        [{ p1:"Nico Franco / Esther Barboza",p2:"Pablo Haitt / Carolina Montero"},{ p1:"Fernando López / Mariana Silvera",p2:"Agustina García / Carolina Zapata"},{ p1:"Agustín Fernández / Fabián Benítez",p2:"Gabriela Rodríguez / Gonzalo Silvera"},{ p1:"Paulina Morales / Gabriel Mateu",p2:"Marcelo Pernin / Bruno Canabé"}],
+      ]
+    },
+    "G2+11": {
+      label: "Liga Suma 11 - Grupo 2", color: "#10b981",
+      cruces: [
+        [{ p1:"Cucho Díaz / Germán González",p2:"Lucas Torres / Lucca Bladisser"},{ p1:"Pablo Brignani / Juan Pablo Aquino",p2:"Emanuel Cacera / Jonathan Cacera"},{ p1:"Alejandra Rodríguez / Mateo Henig",p2:"Gastón Mozzo / Felipe Espósito"},{ p1:"Angelina Domínguez / Mauricio Umpiérrez",p2:"Billy Bladisser / Mattia Bladisser"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Pablo Brignani / Juan Pablo Aquino"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Emanuel Cacera / Jonathan Cacera"},{ p1:"Alejandra Rodríguez / Mateo Henig",p2:"Angelina Domínguez / Mauricio Umpiérrez"},{ p1:"Gastón Mozzo / Felipe Espósito",p2:"Billy Bladisser / Mattia Bladisser"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Emanuel Cacera / Jonathan Cacera"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Pablo Brignani / Juan Pablo Aquino"},{ p1:"Alejandra Rodríguez / Mateo Henig",p2:"Billy Bladisser / Mattia Bladisser"},{ p1:"Gastón Mozzo / Felipe Espósito",p2:"Angelina Domínguez / Mauricio Umpiérrez"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Alejandra Rodríguez / Mateo Henig"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Gastón Mozzo / Felipe Espósito"},{ p1:"Pablo Brignani / Juan Pablo Aquino",p2:"Angelina Domínguez / Mauricio Umpiérrez"},{ p1:"Emanuel Cacera / Jonathan Cacera",p2:"Billy Bladisser / Mattia Bladisser"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Gastón Mozzo / Felipe Espósito"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Alejandra Rodríguez / Mateo Henig"},{ p1:"Pablo Brignani / Juan Pablo Aquino",p2:"Billy Bladisser / Mattia Bladisser"},{ p1:"Emanuel Cacera / Jonathan Cacera",p2:"Angelina Domínguez / Mauricio Umpiérrez"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Angelina Domínguez / Mauricio Umpiérrez"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Billy Bladisser / Mattia Bladisser"},{ p1:"Pablo Brignani / Juan Pablo Aquino",p2:"Alejandra Rodríguez / Mateo Henig"},{ p1:"Emanuel Cacera / Jonathan Cacera",p2:"Gastón Mozzo / Felipe Espósito"}],
+        [{ p1:"Cucho Díaz / Germán González",p2:"Billy Bladisser / Mattia Bladisser"},{ p1:"Lucas Torres / Lucca Bladisser",p2:"Angelina Domínguez / Mauricio Umpiérrez"},{ p1:"Pablo Brignani / Juan Pablo Aquino",p2:"Gastón Mozzo / Felipe Espósito"},{ p1:"Emanuel Cacera / Jonathan Cacera",p2:"Alejandra Rodríguez / Mateo Henig"}],
+      ]
+    }
+  };
+
+  // ── ESTADO ─────────────────────────────────────────────────────
+  let isAdmin = false;
+  let resultados = {};
+  let activeGrupo = "G+7";
+  let activeFecha = 1;
+  let activeSubTab = "cruces";
+  let modalKey = null;
+  let modalCruce = null;
+  let ganadorSeleccionado = "";
+
+  // ── FIREBASE LISTENERS ─────────────────────────────────────────
+  onValue(ref(db, "resultados"), snap => {
+    resultados = snap.val() || {};
+    if (document.getElementById("app").classList.contains("hidden")) return;
+    renderGrupo();
+  });
+
+  // ── LOGIN ──────────────────────────────────────────────────────
+  window.loginVer = () => { isAdmin = false; mostrarApp(); };
+
+  window.irAdmin = async () => {
+    const snap = await get(ref(db, "adminPin"));
+    if (snap.exists()) {
+      show("step-pin-enter"); hide("step-choose");
+      setTimeout(() => document.getElementById("pin-input").focus(), 100);
+    } else {
+      show("step-pin-setup"); hide("step-choose");
+    }
+  };
+
+  window.crearPin = async () => {
+    const p = document.getElementById("pin-new").value;
+    const pc = document.getElementById("pin-confirm").value;
+    const err = document.getElementById("err-setup");
+    if (p.length < 4) { err.textContent = "Mínimo 4 caracteres"; show("err-setup"); return; }
+    if (p !== pc) { err.textContent = "Las contraseñas no coinciden"; show("err-setup"); return; }
+    await set(ref(db, "adminPin"), p);
+    isAdmin = true; mostrarApp();
+  };
+
+  window.verificarPin = async () => {
+    const p = document.getElementById("pin-input").value;
+    const snap = await get(ref(db, "adminPin"));
+    const err = document.getElementById("err-enter");
+    if (snap.val() === p) { isAdmin = true; mostrarApp(); }
+    else { err.textContent = "Contraseña incorrecta"; show("err-enter"); document.getElementById("pin-input").value = ""; }
+  };
+
+  window.volverLogin = () => {
+    hide("step-pin-setup"); hide("step-pin-enter");
+    show("step-choose");
+    document.getElementById("err-setup").textContent = "";
+    document.getElementById("err-enter").textContent = "";
+  };
+
+  window.salir = () => {
+    isAdmin = false;
+    hide("app"); show("login-screen");
+    volverLogin();
+  };
+
+  function mostrarApp() {
+    hide("login-screen"); show("app");
+    if (isAdmin) show("badge-admin"); else hide("badge-admin");
+    if (!isAdmin) show("readonly-banner"); else hide("readonly-banner");
+    renderTabs();
+    setGrupo("G+7");
+  }
+
+  // ── RENDER ─────────────────────────────────────────────────────
+  function renderTabs() {
+    const cont = document.getElementById("grupo-tabs");
+    cont.innerHTML = "";
+    Object.entries(GRUPOS).forEach(([gid, g]) => {
+      const emoji = gid === "G+7" ? "🟡" : gid === "G1+11" ? "🔵" : "🟢";
+      const btn = document.createElement("button");
+      btn.className = "grupo-tab" + (gid === activeGrupo ? " active" : "");
+      btn.style.setProperty("--color", g.color);
+      btn.textContent = emoji + " " + g.label;
+      btn.onclick = () => setGrupo(gid);
+      cont.appendChild(btn);
+    });
+  }
+
+  function setGrupo(gid) {
+    activeGrupo = gid;
+    activeFecha = 1;
+    activeSubTab = "cruces";
+    const g = GRUPOS[gid];
+    document.getElementById("grupo-bar").style.background = g.color;
+    document.getElementById("grupo-title").textContent = g.label.toUpperCase();
+    document.getElementById("sub-tabs").style.setProperty("--color", g.color);
+    document.getElementById("tab-cruces").style.setProperty("--color", g.color);
+    document.getElementById("tab-tabla").style.setProperty("--color", g.color);
+    setSubTab("cruces");
+    renderTabs();
+  }
+
+  window.setSubTab = (tab) => {
+    activeSubTab = tab;
+    document.getElementById("tab-cruces").classList.toggle("active", tab === "cruces");
+    document.getElementById("tab-tabla").classList.toggle("active", tab === "tabla");
+    if (tab === "cruces") { show("view-cruces"); hide("view-tabla"); renderCruces(); }
+    else { hide("view-cruces"); show("view-tabla"); renderTabla(); }
+  };
+
+  function renderCruces() {
+    const g = GRUPOS[activeGrupo];
+    const cont = document.getElementById("view-cruces");
+
+    // Fechas
+    let html = `<div class="fechas">`;
+    g.cruces.forEach((_, i) => {
+      html += `<button class="fecha-btn${activeFecha === i+1 ? " active" : ""}" style="--color:${g.color}" onclick="setFecha(${i+1})">FECHA ${i+1}</button>`;
+    });
+    html += `</div><div class="cruces-grid">`;
+
+    g.cruces[activeFecha - 1].forEach((cruce, ci) => {
+      const key = `${activeGrupo}_F${activeFecha}_${ci}`;
+      const d = resultados[key] || {};
+      const agendado = !!d.fecha;
+      const conRes = !!d.resultado;
+      const borderColor = conRes ? g.color + "88" : agendado ? g.color + "44" : "#1a2840";
+      const badgeBg = conRes ? g.color : agendado ? g.color + "33" : "#1a2840";
+      const badgeColor = conRes ? "white" : agendado ? g.color : "#4a6fa5";
+      const badgeText = conRes ? "✓ JUGADO" : agendado ? "AGENDADO" : "SIN FECHA";
+
+      html += `<div class="cruce-card${isAdmin ? " admin" : ""}" style="border-color:${borderColor};--color:${g.color}" ${isAdmin ? `onclick="abrirModal('${key}',${ci})"` : ""}>
+        <div class="cruce-top">
+          <div class="cruce-fecha-label">FECHA ${activeFecha}</div>
+          <span class="cruce-badge" style="background:${badgeBg};color:${badgeColor}">${badgeText}</span>
+        </div>
+        <div class="cruce-parejas" style="--color:${g.color}">
+          <div class="cruce-pareja${d.ganador==='pareja1'?' ganador':''}">${cruce.p1}</div>
+          <div class="cruce-vs">VS</div>
+          <div class="cruce-pareja${d.ganador==='pareja2'?' ganador':''}">${cruce.p2}</div>
+        </div>
+        ${agendado ? `<div class="cruce-info"><span>📅 ${d.fecha.split("-").reverse().join("/")}</span><span>🕐 ${d.hora}</span><span>🎾 ${(d.cancha||"").replace("Cancha ","C")}</span></div>` : ""}
+        ${conRes ? `<div class="cruce-resultado" style="color:${g.color}">${d.resultado}</div>` : ""}
+        ${isAdmin ? `<div class="cruce-edit-hint">✏️ Tocá para editar</div>` : ""}
+      </div>`;
+    });
+    html += `</div>`;
+    cont.innerHTML = html;
+  }
+
+  function renderTabla() {
+    const g = GRUPOS[activeGrupo];
+    const tabla = calcTabla(activeGrupo);
+    let html = `<div class="tabla-wrap"><table>
+      <thead><tr>
+        <th class="center">#</th>
+        <th class="left">PAREJA</th>
+        <th class="center">PJ</th>
+        <th class="center">PG</th>
+        <th class="center">PP</th>
+        <th class="center">PTS</th>
+      </tr></thead><tbody>`;
+    tabla.forEach((row, i) => {
+      const pos = i === 0 ? "🥇" : i === 1 ? "🥈" : i + 1;
+      const rowBg = i === 0 ? `background:${g.color}18` : i === 1 ? `background:${g.color}0a` : "";
+      html += `<tr style="${rowBg}">
+        <td class="td-pos" style="color:${i<2?g.color:'#4a6fa5'}">${pos}</td>
+        <td>${row.pareja}</td>
+        <td class="center">${row.PJ}</td>
+        <td class="td-gana">${row.PG}</td>
+        <td class="td-pierde">${row.PP}</td>
+        <td class="td-pts" style="color:${g.color}">${row.PTS}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    document.getElementById("view-tabla").innerHTML = html;
+  }
+
+  function calcTabla(gid) {
+    const g = GRUPOS[gid];
+    const tabla = {};
+    g.cruces[0].forEach(c => {
+      tabla[c.p1] = { PJ:0, PG:0, PP:0, PTS:0 };
+      tabla[c.p2] = { PJ:0, PG:0, PP:0, PTS:0 };
+    });
+    g.cruces.forEach((ronda, fi) => {
+      ronda.forEach((cruce, ci) => {
+        const id = `${gid}_F${fi+1}_${ci}`;
+        const r = resultados[id];
+        if (r && r.resultado) {
+          tabla[cruce.p1].PJ++; tabla[cruce.p2].PJ++;
+          if (r.ganador === "pareja1") { tabla[cruce.p1].PG++; tabla[cruce.p1].PTS++; tabla[cruce.p2].PP++; }
+          else if (r.ganador === "pareja2") { tabla[cruce.p2].PG++; tabla[cruce.p2].PTS++; tabla[cruce.p1].PP++; }
+        }
+      });
+    });
+    return Object.entries(tabla).map(([p,s]) => ({pareja:p,...s})).sort((a,b) => b.PTS-a.PTS || b.PG-a.PG);
+  }
+
+  // ── MODAL ──────────────────────────────────────────────────────
+  window.abrirModal = (key, ci) => {
+    if (!isAdmin) return;
+    modalKey = key;
+    const g = GRUPOS[activeGrupo];
+    modalCruce = g.cruces[activeFecha - 1][ci];
+    const d = resultados[key] || {};
+    ganadorSeleccionado = d.ganador || "";
+
+    document.getElementById("modal-box").style.borderColor = g.color + "44";
+    document.getElementById("modal-box").style.boxShadow = `0 0 60px ${g.color}22`;
+    document.getElementById("modal-res-title").style.color = g.color;
+
+    document.getElementById("modal-parejas").innerHTML =
+      `${modalCruce.p1}<br><span class="modal-vs" style="color:${g.color}">VS</span><br>${modalCruce.p2}`;
+
+    document.getElementById("m-fecha").value = d.fecha || "";
+    document.getElementById("m-hora").value = d.hora || "10:00";
+    document.getElementById("m-cancha").value = d.cancha || "Cancha 1";
+    document.getElementById("m-resultado").value = d.resultado || "";
+    document.getElementById("m-resultado").disabled = false;
+
+    const g1 = modalCruce.p1.split("/")[0].trim();
+    const g2 = modalCruce.p2.split("/")[0].trim();
+    const btn1 = document.getElementById("btn-g1");
+    const btn2 = document.getElementById("btn-g2");
+    btn1.textContent = g1; btn2.textContent = g2;
+    btn1.style.background = ganadorSeleccionado === "pareja1" ? g.color : "#1a2840";
+    btn1.style.color = ganadorSeleccionado === "pareja1" ? "white" : "#4a6fa5";
+    btn1.style.borderColor = ganadorSeleccionado === "pareja1" ? g.color : "#1a2840";
+    btn2.style.background = ganadorSeleccionado === "pareja2" ? g.color : "#1a2840";
+    btn2.style.color = ganadorSeleccionado === "pareja2" ? "white" : "#4a6fa5";
+    btn2.style.borderColor = ganadorSeleccionado === "pareja2" ? g.color : "#1a2840";
+
+    hide("modal-note");
+    document.getElementById("btn-guardar").style.background = g.color;
+    show("modal");
+  };
+
+  window.setGanador = (g) => {
+    ganadorSeleccionado = ganadorSeleccionado === g ? "" : g;
+    const color = GRUPOS[activeGrupo].color;
+    const btn1 = document.getElementById("btn-g1");
+    const btn2 = document.getElementById("btn-g2");
+    btn1.style.background = ganadorSeleccionado === "pareja1" ? color : "#1a2840";
+    btn1.style.color = ganadorSeleccionado === "pareja1" ? "white" : "#4a6fa5";
+    btn1.style.borderColor = ganadorSeleccionado === "pareja1" ? color : "#1a2840";
+    btn2.style.background = ganadorSeleccionado === "pareja2" ? color : "#1a2840";
+    btn2.style.color = ganadorSeleccionado === "pareja2" ? "white" : "#4a6fa5";
+    btn2.style.borderColor = ganadorSeleccionado === "pareja2" ? color : "#1a2840";
+  };
+
+  window.guardarCruce = async () => {
+    const data = {
+      fecha: document.getElementById("m-fecha").value,
+      hora: document.getElementById("m-hora").value,
+      cancha: document.getElementById("m-cancha").value,
+      resultado: document.getElementById("m-resultado").value,
+      ganador: ganadorSeleccionado,
+    };
+    await set(ref(db, "resultados/" + modalKey), data);
+    cerrarModal();
+  };
+
+  window.cerrarModal = () => hide("modal");
+
+  window.setFecha = (f) => { activeFecha = f; renderGrupo(); };
+
+  function renderGrupo() {
+    if (activeSubTab === "cruces") renderCruces();
+    else renderTabla();
+  }
+
+  // ── HELPERS ────────────────────────────────────────────────────
+  function show(id) { document.getElementById(id).classList.remove("hidden"); }
+  function hide(id) { document.getElementById(id).classList.add("hidden"); }
+
+  // ── INIT ───────────────────────────────────────────────────────
+  hide("loading");
+  show("login-screen");
+</script>
+
+</body>
+</html>
