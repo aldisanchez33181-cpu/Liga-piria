@@ -344,6 +344,32 @@ footer { text-align: center; padding: 2rem; color: #4a6fa5; font-size: 0.75rem; 
   let modalKey = null;
   let modalCruce = null;
   let ganadorSeleccionado = "";
+  let puntosPartido = 1;
+
+  function calcPuntosPreview() {
+    const s1p1 = parseInt(document.getElementById("m-s1p1").value)||0;
+    const s1p2 = parseInt(document.getElementById("m-s1p2").value)||0;
+    const s2p1 = parseInt(document.getElementById("m-s2p1").value)||0;
+    const s2p2 = parseInt(document.getElementById("m-s2p2").value)||0;
+    const s3p1 = parseInt(document.getElementById("m-s3p1").value)||0;
+    const s3p2 = parseInt(document.getElementById("m-s3p2").value)||0;
+    let pts1=0, pts2=0;
+    if (s1p1 > s1p2) pts1++; else if (s1p2 > s1p1) pts2++;
+    if (s2p1 > s2p2) pts1++; else if (s2p2 > s2p1) pts2++;
+    if (s3p1 > s3p2) pts1++; else if (s3p2 > s3p1) pts2++;
+    const color = GRUPOS[activeGrupo].color;
+    const p1name = modalCruce ? modalCruce.p1.split("/")[0].trim() : "P1";
+    const p2name = modalCruce ? modalCruce.p2.split("/")[0].trim() : "P2";
+    document.getElementById("puntos-preview").innerHTML =
+      `<span style="color:${color}">${p1name}: <b>${pts1} pts</b></span>
+       <span style="color:${color}">${p2name}: <b>${pts2} pts</b></span>`;
+    return { pts1, pts2 };
+  }
+
+  // Agregar listeners a los inputs de sets
+  ["m-s1p1","m-s1p2","m-s2p1","m-s2p2","m-s3p1","m-s3p2"].forEach(id => {
+    document.getElementById(id).addEventListener("input", calcPuntosPreview);
+  });
 
   // ── FIREBASE LISTENERS ─────────────────────────────────────────
   onValue(ref(db, "resultados"), snap => {
@@ -551,6 +577,17 @@ footer { text-align: center; padding: 2rem; color: #4a6fa5; font-size: 0.75rem; 
     document.getElementById("m-cancha").value = d.cancha || "Cancha 1";
     document.getElementById("m-resultado").value = d.resultado || "";
     document.getElementById("m-resultado").disabled = false;
+    puntosPartido = d.puntos || 1;
+    // Cargar sets
+    const sets = d.sets || {};
+    document.getElementById("m-s1p1").value = sets.s1p1 || "";
+    document.getElementById("m-s1p2").value = sets.s1p2 || "";
+    document.getElementById("m-s2p1").value = sets.s2p1 || "";
+    document.getElementById("m-s2p2").value = sets.s2p2 || "";
+    document.getElementById("m-s3p1").value = sets.s3p1 || "";
+    document.getElementById("m-s3p2").value = sets.s3p2 || "";
+    document.getElementById("puntos-preview").innerHTML = "";
+    if (d.sets) calcPuntosPreview();
 
     const g1 = modalCruce.p1.split("/")[0].trim();
     const g2 = modalCruce.p2.split("/")[0].trim();
@@ -564,10 +601,27 @@ footer { text-align: center; padding: 2rem; color: #4a6fa5; font-size: 0.75rem; 
     btn2.style.color = ganadorSeleccionado === "pareja2" ? "white" : "#4a6fa5";
     btn2.style.borderColor = ganadorSeleccionado === "pareja2" ? g.color : "#1a2840";
 
+    // puntos
+    actualizarBtnPuntos(g.color);
+
     hide("modal-note");
     document.getElementById("btn-guardar").style.background = g.color;
     show("modal");
   };
+
+  window.setPuntos = (p) => {
+    puntosPartido = p;
+    actualizarBtnPuntos(GRUPOS[activeGrupo].color);
+  };
+
+  function actualizarBtnPuntos(color) {
+    [1,2,3].forEach(p => {
+      const btn = document.getElementById(`btn-pts${p}`);
+      btn.style.background = puntosPartido === p ? color : "#1a2840";
+      btn.style.color = puntosPartido === p ? "white" : "#4a6fa5";
+      btn.style.borderColor = puntosPartido === p ? color : "#1a2840";
+    });
+  }
 
   window.setGanador = (g) => {
     ganadorSeleccionado = ganadorSeleccionado === g ? "" : g;
@@ -583,12 +637,27 @@ footer { text-align: center; padding: 2rem; color: #4a6fa5; font-size: 0.75rem; 
   };
 
   window.guardarCruce = async () => {
+    const s1p1 = parseInt(document.getElementById("m-s1p1").value)||0;
+    const s1p2 = parseInt(document.getElementById("m-s1p2").value)||0;
+    const s2p1 = parseInt(document.getElementById("m-s2p1").value)||0;
+    const s2p2 = parseInt(document.getElementById("m-s2p2").value)||0;
+    const s3p1 = parseInt(document.getElementById("m-s3p1").value)||0;
+    const s3p2 = parseInt(document.getElementById("m-s3p2").value)||0;
+    let pts1=0, pts2=0;
+    if (s1p1>s1p2) pts1++; else if (s1p2>s1p1) pts2++;
+    if (s2p1>s2p2) pts1++; else if (s2p2>s2p1) pts2++;
+    if (s3p1>s3p2) pts1++; else if (s3p2>s3p1) pts2++;
+    const ganador = pts1 > pts2 ? "pareja1" : pts2 > pts1 ? "pareja2" : "";
+    const resultado = `${s1p1}-${s1p2} / ${s2p1}-${s2p2} / ${s3p1}-${s3p2}`;
     const data = {
       fecha: document.getElementById("m-fecha").value,
       hora: document.getElementById("m-hora").value,
       cancha: document.getElementById("m-cancha").value,
-      resultado: document.getElementById("m-resultado").value,
-      ganador: ganadorSeleccionado,
+      resultado,
+      ganador,
+      sets: { s1p1, s1p2, s2p1, s2p2, s3p1, s3p2 },
+      ptsP1: pts1,
+      ptsP2: pts2,
     };
     await set(ref(db, "resultados/" + modalKey), data);
     cerrarModal();
