@@ -102,20 +102,20 @@ const bg="#06090f",card="#0c1220",border="#1a2840",text="#dbeafe",muted="#4a6fa5
 function cid(g,f,i){return `${g}_F${f}_${i}`;}
 function fmtFecha(f){return f?f.split("-").reverse().join("/"):"";}
 
-function calcSets(resultado, ganador){
-  // resultado ej: "6-3 / 4-6 / 6-4"
-  // retorna {setsP1, setsP2}
-  if(!resultado||!resultado.trim())return{setsP1:0,setsP2:0};
-  let setsP1=0,setsP2=0;
+function calcSets(resultado){
+  // El resultado siempre se carga con los games del GANADOR primero
+  // ej: "6-3 / 4-6 / 6-4" → ganador ganó sets 1 y 3, perdedor ganó set 2
+  if(!resultado||!resultado.trim())return{setsGanador:0,setsPerdedor:0};
+  let setsGanador=0,setsPerdedor=0;
   const sets=resultado.split("/").map(s=>s.trim());
   sets.forEach(s=>{
     const partes=s.split("-").map(x=>parseInt(x.trim()));
     if(partes.length===2&&!isNaN(partes[0])&&!isNaN(partes[1])){
-      if(partes[0]>partes[1])setsP1++;
-      else if(partes[1]>partes[0])setsP2++;
+      if(partes[0]>partes[1])setsGanador++;
+      else if(partes[1]>partes[0])setsPerdedor++;
     }
   });
-  return{setsP1,setsP2};
+  return{setsGanador,setsPerdedor};
 }
 
 function calcTabla(gid){
@@ -126,15 +126,15 @@ function calcTabla(gid){
       const r=STATE.res[cid(gid,fi+1,ci)];
       if(r&&r.resultado&&r.resultado.trim()&&r.ganador){
         t[p1].PJ++;t[p2].PJ++;
-        const {setsP1,setsP2}=calcSets(r.resultado,r.ganador);
+        const {setsGanador,setsPerdedor}=calcSets(r.resultado);
         if(r.ganador==="p1"){
           t[p1].PG++;t[p2].PP++;
-          t[p1].PTS+=setsP1;
-          t[p2].PTS+=setsP2;
+          t[p1].PTS+=setsGanador;
+          t[p2].PTS+=setsPerdedor;
         } else {
           t[p2].PG++;t[p1].PP++;
-          t[p2].PTS+=setsP2;
-          t[p1].PTS+=setsP1;
+          t[p2].PTS+=setsGanador;
+          t[p1].PTS+=setsPerdedor;
         }
       }
     });
