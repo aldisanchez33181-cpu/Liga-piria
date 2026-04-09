@@ -6,606 +6,497 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Liga Piria Pádel Club 2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;800&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
-      authDomain: "liga-piriapadel.firebaseapp.com",
-      projectId: "liga-piriapadel",
-      storageBucket: "liga-piriapadel.firebasestorage.app",
-      messagingSenderId: "290389729651",
-      appId: "1:290389729651:web:716352d8ca667b8c5b6506"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-```
-window.fbSet = async (key, value) => {
-  try { await db.collection("liga").doc(key).set({ value }); } catch(e) { console.error(e); }
-};
-window.fbGet = async (key) => {
-  try { const s = await db.collection("liga").doc(key).get(); return s.exists ? s.data().value : null; } catch { return null; }
-};
-window.fbListen = (key, cb) => {
-  try { return db.collection("liga").doc(key).onSnapshot(s => { if(s.exists) cb(s.data().value); }); } catch { return ()=>{}; }
-};
-```
-
-  </script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#06090f;color:#dbeafe}
+    body{background:#06090f;color:#dbeafe;font-family:'Lato',sans-serif}
     input,select,button,textarea{font-family:inherit}
     ::-webkit-scrollbar{width:4px;height:4px}
     ::-webkit-scrollbar-track{background:#06090f}
     ::-webkit-scrollbar-thumb{background:#1a2840;border-radius:2px}
+    .card{background:#0c1220;border:1px solid #1a2840;border-radius:12px;padding:1rem}
+    .btn{border:none;border-radius:8px;padding:.65rem 1.2rem;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:1rem;letter-spacing:1.5px;color:white}
+    .inp{background:#06090f;border:1px solid #1a2840;border-radius:8px;padding:.55rem .8rem;color:#dbeafe;font-size:.9rem;width:100%;box-sizing:border-box;outline:none}
+    .lbl{display:block;color:#4a6fa5;font-size:.68rem;font-family:'Barlow Condensed',sans-serif;letter-spacing:2px;margin-bottom:.3rem}
+    .bc{font-family:'Barlow Condensed',sans-serif}
+    .hidden{display:none}
+    #loading{position:fixed;inset:0;background:#06090f;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Barlow Condensed',sans-serif;color:#4a6fa5;letter-spacing:3px}
   </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
+<div id="loading">CARGANDO...</div>
+<div id="app" class="hidden"></div>
 
+<script>
+// ── Firebase Init ──────────────────────────────────────
+firebase.initializeApp({
+  apiKey:"AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
+  authDomain:"liga-piriapadel.firebaseapp.com",
+  projectId:"liga-piriapadel",
+  storageBucket:"liga-piriapadel.firebasestorage.app",
+  messagingSenderId:"290389729651",
+  appId:"1:290389729651:web:716352d8ca667b8c5b6506"
+});
+const db = firebase.firestore();
+
+async function fbGet(key){try{const s=await db.collection("liga").doc(key).get();return s.exists?s.data().value:null;}catch{return null;}}
+async function fbSet(key,val){try{await db.collection("liga").doc(key).set({value:val});}catch(e){console.error(e);}}
+function fbListen(key,cb){try{return db.collection("liga").doc(key).onSnapshot(s=>{if(s.exists)cb(s.data().value);});}catch{return()=>{};}}
+
+// ── Data ──────────────────────────────────────────────
+const LOGO = "https://i.ibb.co/QFtnYvcp/Whats-App-Image-2026-04-08-at-4-51-05-PM.jpg";
+const PIN_KEY = "liga-piria-pin";
+const CANCHAS = ["Cancha 1","Cancha 2","Cancha 3","Cancha 4"];
 const GRUPOS = {
-“G+7”: {
-label: “Liga Suma 7”, color: “#f59e0b”,
-cruces: [
-[[“Rodrigo Larrosa / Agustín Núñez”,“Sebastián Morales / Santiago Mónaco”],[“Martín Dangelo / Iván Tomatis”,“Ignacio Zurdo / Damián Cotto”],[“Bruno Muñoz / Juan Goicoechea”,“Mauro Frattini / Felipe Muñoz”],[“Joaquín Domínguez / Francisco Larre”,“Laureano Fregueiro / Alberto Gasalla”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Martín Dangelo / Iván Tomatis”],[“Sebastián Morales / Santiago Mónaco”,“Ignacio Zurdo / Damián Cotto”],[“Bruno Muñoz / Juan Goicoechea”,“Joaquín Domínguez / Francisco Larre”],[“Mauro Frattini / Felipe Muñoz”,“Laureano Fregueiro / Alberto Gasalla”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Ignacio Zurdo / Damián Cotto”],[“Sebastián Morales / Santiago Mónaco”,“Martín Dangelo / Iván Tomatis”],[“Bruno Muñoz / Juan Goicoechea”,“Laureano Fregueiro / Alberto Gasalla”],[“Mauro Frattini / Felipe Muñoz”,“Joaquín Domínguez / Francisco Larre”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Bruno Muñoz / Juan Goicoechea”],[“Sebastián Morales / Santiago Mónaco”,“Mauro Frattini / Felipe Muñoz”],[“Martín Dangelo / Iván Tomatis”,“Joaquín Domínguez / Francisco Larre”],[“Ignacio Zurdo / Damián Cotto”,“Laureano Fregueiro / Alberto Gasalla”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Mauro Frattini / Felipe Muñoz”],[“Sebastián Morales / Santiago Mónaco”,“Bruno Muñoz / Juan Goicoechea”],[“Martín Dangelo / Iván Tomatis”,“Laureano Fregueiro / Alberto Gasalla”],[“Ignacio Zurdo / Damián Cotto”,“Joaquín Domínguez / Francisco Larre”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Joaquín Domínguez / Francisco Larre”],[“Sebastián Morales / Santiago Mónaco”,“Laureano Fregueiro / Alberto Gasalla”],[“Martín Dangelo / Iván Tomatis”,“Bruno Muñoz / Juan Goicoechea”],[“Ignacio Zurdo / Damián Cotto”,“Mauro Frattini / Felipe Muñoz”]],
-[[“Rodrigo Larrosa / Agustín Núñez”,“Laureano Fregueiro / Alberto Gasalla”],[“Sebastián Morales / Santiago Mónaco”,“Joaquín Domínguez / Francisco Larre”],[“Martín Dangelo / Iván Tomatis”,“Mauro Frattini / Felipe Muñoz”],[“Ignacio Zurdo / Damián Cotto”,“Bruno Muñoz / Juan Goicoechea”]],
-],
-},
-“G1+11”: {
-label: “Suma 11 - Grupo 1”, color: “#3b82f6”,
-cruces: [
-[[“Nico Franco / Esther Barboza”,“Fernando López / Mariana Silvera”],[“Agustín Fernández / Fabián Benítez”,“Paulina Morales / Gabriel Mateu”],[“Marcelo Pernin / Bruno Canabé”,“Gabriela Rodríguez / Gonzalo Silvera”],[“Agustina García / Carolina Zapata”,“Pablo Haitt / Carolina Montero”]],
-[[“Nico Franco / Esther Barboza”,“Agustín Fernández / Fabián Benítez”],[“Fernando López / Mariana Silvera”,“Paulina Morales / Gabriel Mateu”],[“Marcelo Pernin / Bruno Canabé”,“Agustina García / Carolina Zapata”],[“Gabriela Rodríguez / Gonzalo Silvera”,“Pablo Haitt / Carolina Montero”]],
-[[“Nico Franco / Esther Barboza”,“Paulina Morales / Gabriel Mateu”],[“Fernando López / Mariana Silvera”,“Agustín Fernández / Fabián Benítez”],[“Marcelo Pernin / Bruno Canabé”,“Pablo Haitt / Carolina Montero”],[“Gabriela Rodríguez / Gonzalo Silvera”,“Agustina García / Carolina Zapata”]],
-[[“Nico Franco / Esther Barboza”,“Marcelo Pernin / Bruno Canabé”],[“Fernando López / Mariana Silvera”,“Gabriela Rodríguez / Gonzalo Silvera”],[“Agustín Fernández / Fabián Benítez”,“Agustina García / Carolina Zapata”],[“Paulina Morales / Gabriel Mateu”,“Pablo Haitt / Carolina Montero”]],
-[[“Nico Franco / Esther Barboza”,“Gabriela Rodríguez / Gonzalo Silvera”],[“Fernando López / Mariana Silvera”,“Marcelo Pernin / Bruno Canabé”],[“Agustín Fernández / Fabián Benítez”,“Pablo Haitt / Carolina Montero”],[“Paulina Morales / Gabriel Mateu”,“Agustina García / Carolina Zapata”]],
-[[“Nico Franco / Esther Barboza”,“Agustina García / Carolina Zapata”],[“Fernando López / Mariana Silvera”,“Pablo Haitt / Carolina Montero”],[“Agustín Fernández / Fabián Benítez”,“Marcelo Pernin / Bruno Canabé”],[“Paulina Morales / Gabriel Mateu”,“Gabriela Rodríguez / Gonzalo Silvera”]],
-[[“Nico Franco / Esther Barboza”,“Pablo Haitt / Carolina Montero”],[“Fernando López / Mariana Silvera”,“Agustina García / Carolina Zapata”],[“Agustín Fernández / Fabián Benítez”,“Gabriela Rodríguez / Gonzalo Silvera”],[“Paulina Morales / Gabriel Mateu”,“Marcelo Pernin / Bruno Canabé”]],
-],
-},
-“G2+11”: {
-label: “Suma 11 - Grupo 2”, color: “#10b981”,
-cruces: [
-[[“Cucho Díaz / Germán González”,“Lucas Torres / Lucca Bladisser”],[“Pablo Brignani / Juan Pablo Aquino”,“Emanuel Cacera / Jonathan Cacera”],[“Alejandra Rodríguez / Mateo Henig”,“Gastón Mozzo / Felipe Espósito”],[“Angelina Domínguez / Mauricio Umpiérrez”,“Billy Bladisser / Mattia Bladisser”]],
-[[“Cucho Díaz / Germán González”,“Pablo Brignani / Juan Pablo Aquino”],[“Lucas Torres / Lucca Bladisser”,“Emanuel Cacera / Jonathan Cacera”],[“Alejandra Rodríguez / Mateo Henig”,“Angelina Domínguez / Mauricio Umpiérrez”],[“Gastón Mozzo / Felipe Espósito”,“Billy Bladisser / Mattia Bladisser”]],
-[[“Cucho Díaz / Germán González”,“Emanuel Cacera / Jonathan Cacera”],[“Lucas Torres / Lucca Bladisser”,“Pablo Brignani / Juan Pablo Aquino”],[“Alejandra Rodríguez / Mateo Henig”,“Billy Bladisser / Mattia Bladisser”],[“Gastón Mozzo / Felipe Espósito”,“Angelina Domínguez / Mauricio Umpiérrez”]],
-[[“Cucho Díaz / Germán González”,“Alejandra Rodríguez / Mateo Henig”],[“Lucas Torres / Lucca Bladisser”,“Gastón Mozzo / Felipe Espósito”],[“Pablo Brignani / Juan Pablo Aquino”,“Angelina Domínguez / Mauricio Umpiérrez”],[“Emanuel Cacera / Jonathan Cacera”,“Billy Bladisser / Mattia Bladisser”]],
-[[“Cucho Díaz / Germán González”,“Gastón Mozzo / Felipe Espósito”],[“Lucas Torres / Lucca Bladisser”,“Alejandra Rodríguez / Mateo Henig”],[“Pablo Brignani / Juan Pablo Aquino”,“Billy Bladisser / Mattia Bladisser”],[“Emanuel Cacera / Jonathan Cacera”,“Angelina Domínguez / Mauricio Umpiérrez”]],
-[[“Cucho Díaz / Germán González”,“Angelina Domínguez / Mauricio Umpiérrez”],[“Lucas Torres / Lucca Bladisser”,“Billy Bladisser / Mattia Bladisser”],[“Pablo Brignani / Juan Pablo Aquino”,“Alejandra Rodríguez / Mateo Henig”],[“Emanuel Cacera / Jonathan Cacera”,“Gastón Mozzo / Felipe Espósito”]],
-[[“Cucho Díaz / Germán González”,“Billy Bladisser / Mattia Bladisser”],[“Lucas Torres / Lucca Bladisser”,“Angelina Domínguez / Mauricio Umpiérrez”],[“Pablo Brignani / Juan Pablo Aquino”,“Gastón Mozzo / Felipe Espósito”],[“Emanuel Cacera / Jonathan Cacera”,“Alejandra Rodríguez / Mateo Henig”]],
-],
-},
+  "G+7":{label:"Liga Suma 7",color:"#f59e0b",cruces:[
+    [["Rodrigo Larrosa / Agustín Núñez","Sebastián Morales / Santiago Mónaco"],["Martín Dangelo / Iván Tomatis","Ignacio Zurdo / Damián Cotto"],["Bruno Muñoz / Juan Goicoechea","Mauro Frattini / Felipe Muñoz"],["Joaquín Domínguez / Francisco Larre","Laureano Fregueiro / Alberto Gasalla"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Martín Dangelo / Iván Tomatis"],["Sebastián Morales / Santiago Mónaco","Ignacio Zurdo / Damián Cotto"],["Bruno Muñoz / Juan Goicoechea","Joaquín Domínguez / Francisco Larre"],["Mauro Frattini / Felipe Muñoz","Laureano Fregueiro / Alberto Gasalla"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Ignacio Zurdo / Damián Cotto"],["Sebastián Morales / Santiago Mónaco","Martín Dangelo / Iván Tomatis"],["Bruno Muñoz / Juan Goicoechea","Laureano Fregueiro / Alberto Gasalla"],["Mauro Frattini / Felipe Muñoz","Joaquín Domínguez / Francisco Larre"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Bruno Muñoz / Juan Goicoechea"],["Sebastián Morales / Santiago Mónaco","Mauro Frattini / Felipe Muñoz"],["Martín Dangelo / Iván Tomatis","Joaquín Domínguez / Francisco Larre"],["Ignacio Zurdo / Damián Cotto","Laureano Fregueiro / Alberto Gasalla"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Mauro Frattini / Felipe Muñoz"],["Sebastián Morales / Santiago Mónaco","Bruno Muñoz / Juan Goicoechea"],["Martín Dangelo / Iván Tomatis","Laureano Fregueiro / Alberto Gasalla"],["Ignacio Zurdo / Damián Cotto","Joaquín Domínguez / Francisco Larre"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Joaquín Domínguez / Francisco Larre"],["Sebastián Morales / Santiago Mónaco","Laureano Fregueiro / Alberto Gasalla"],["Martín Dangelo / Iván Tomatis","Bruno Muñoz / Juan Goicoechea"],["Ignacio Zurdo / Damián Cotto","Mauro Frattini / Felipe Muñoz"]],
+    [["Rodrigo Larrosa / Agustín Núñez","Laureano Fregueiro / Alberto Gasalla"],["Sebastián Morales / Santiago Mónaco","Joaquín Domínguez / Francisco Larre"],["Martín Dangelo / Iván Tomatis","Mauro Frattini / Felipe Muñoz"],["Ignacio Zurdo / Damián Cotto","Bruno Muñoz / Juan Goicoechea"]],
+  ]},
+  "G1+11":{label:"Suma 11 - Grupo 1",color:"#3b82f6",cruces:[
+    [["Nico Franco / Esther Barboza","Fernando López / Mariana Silvera"],["Agustín Fernández / Fabián Benítez","Paulina Morales / Gabriel Mateu"],["Marcelo Pernin / Bruno Canabé","Gabriela Rodríguez / Gonzalo Silvera"],["Agustina García / Carolina Zapata","Pablo Haitt / Carolina Montero"]],
+    [["Nico Franco / Esther Barboza","Agustín Fernández / Fabián Benítez"],["Fernando López / Mariana Silvera","Paulina Morales / Gabriel Mateu"],["Marcelo Pernin / Bruno Canabé","Agustina García / Carolina Zapata"],["Gabriela Rodríguez / Gonzalo Silvera","Pablo Haitt / Carolina Montero"]],
+    [["Nico Franco / Esther Barboza","Paulina Morales / Gabriel Mateu"],["Fernando López / Mariana Silvera","Agustín Fernández / Fabián Benítez"],["Marcelo Pernin / Bruno Canabé","Pablo Haitt / Carolina Montero"],["Gabriela Rodríguez / Gonzalo Silvera","Agustina García / Carolina Zapata"]],
+    [["Nico Franco / Esther Barboza","Marcelo Pernin / Bruno Canabé"],["Fernando López / Mariana Silvera","Gabriela Rodríguez / Gonzalo Silvera"],["Agustín Fernández / Fabián Benítez","Agustina García / Carolina Zapata"],["Paulina Morales / Gabriel Mateu","Pablo Haitt / Carolina Montero"]],
+    [["Nico Franco / Esther Barboza","Gabriela Rodríguez / Gonzalo Silvera"],["Fernando López / Mariana Silvera","Marcelo Pernin / Bruno Canabé"],["Agustín Fernández / Fabián Benítez","Pablo Haitt / Carolina Montero"],["Paulina Morales / Gabriel Mateu","Agustina García / Carolina Zapata"]],
+    [["Nico Franco / Esther Barboza","Agustina García / Carolina Zapata"],["Fernando López / Mariana Silvera","Pablo Haitt / Carolina Montero"],["Agustín Fernández / Fabián Benítez","Marcelo Pernin / Bruno Canabé"],["Paulina Morales / Gabriel Mateu","Gabriela Rodríguez / Gonzalo Silvera"]],
+    [["Nico Franco / Esther Barboza","Pablo Haitt / Carolina Montero"],["Fernando López / Mariana Silvera","Agustina García / Carolina Zapata"],["Agustín Fernández / Fabián Benítez","Gabriela Rodríguez / Gonzalo Silvera"],["Paulina Morales / Gabriel Mateu","Marcelo Pernin / Bruno Canabé"]],
+  ]},
+  "G2+11":{label:"Suma 11 - Grupo 2",color:"#10b981",cruces:[
+    [["Cucho Díaz / Germán González","Lucas Torres / Lucca Bladisser"],["Pablo Brignani / Juan Pablo Aquino","Emanuel Cacera / Jonathan Cacera"],["Alejandra Rodríguez / Mateo Henig","Gastón Mozzo / Felipe Espósito"],["Angelina Domínguez / Mauricio Umpiérrez","Billy Bladisser / Mattia Bladisser"]],
+    [["Cucho Díaz / Germán González","Pablo Brignani / Juan Pablo Aquino"],["Lucas Torres / Lucca Bladisser","Emanuel Cacera / Jonathan Cacera"],["Alejandra Rodríguez / Mateo Henig","Angelina Domínguez / Mauricio Umpiérrez"],["Gastón Mozzo / Felipe Espósito","Billy Bladisser / Mattia Bladisser"]],
+    [["Cucho Díaz / Germán González","Emanuel Cacera / Jonathan Cacera"],["Lucas Torres / Lucca Bladisser","Pablo Brignani / Juan Pablo Aquino"],["Alejandra Rodríguez / Mateo Henig","Billy Bladisser / Mattia Bladisser"],["Gastón Mozzo / Felipe Espósito","Angelina Domínguez / Mauricio Umpiérrez"]],
+    [["Cucho Díaz / Germán González","Alejandra Rodríguez / Mateo Henig"],["Lucas Torres / Lucca Bladisser","Gastón Mozzo / Felipe Espósito"],["Pablo Brignani / Juan Pablo Aquino","Angelina Domínguez / Mauricio Umpiérrez"],["Emanuel Cacera / Jonathan Cacera","Billy Bladisser / Mattia Bladisser"]],
+    [["Cucho Díaz / Germán González","Gastón Mozzo / Felipe Espósito"],["Lucas Torres / Lucca Bladisser","Alejandra Rodríguez / Mateo Henig"],["Pablo Brignani / Juan Pablo Aquino","Billy Bladisser / Mattia Bladisser"],["Emanuel Cacera / Jonathan Cacera","Angelina Domínguez / Mauricio Umpiérrez"]],
+    [["Cucho Díaz / Germán González","Angelina Domínguez / Mauricio Umpiérrez"],["Lucas Torres / Lucca Bladisser","Billy Bladisser / Mattia Bladisser"],["Pablo Brignani / Juan Pablo Aquino","Alejandra Rodríguez / Mateo Henig"],["Emanuel Cacera / Jonathan Cacera","Gastón Mozzo / Felipe Espósito"]],
+    [["Cucho Díaz / Germán González","Billy Bladisser / Mattia Bladisser"],["Lucas Torres / Lucca Bladisser","Angelina Domínguez / Mauricio Umpiérrez"],["Pablo Brignani / Juan Pablo Aquino","Gastón Mozzo / Felipe Espósito"],["Emanuel Cacera / Jonathan Cacera","Alejandra Rodríguez / Mateo Henig"]],
+  ]},
 };
 
-const CANCHAS = [“Cancha 1”,“Cancha 2”,“Cancha 3”,“Cancha 4”];
-const PIN_KEY = “liga-piria-pin”;
-const LOGO = “https://i.ibb.co/QFtnYvcp/Whats-App-Image-2026-04-08-at-4-51-05-PM.jpg”;
-
-const bg=”#06090f”, card=”#0c1220”, border=”#1a2840”, text=”#dbeafe”, muted=”#4a6fa5”;
-const inp = { background:bg, border:`1px solid ${border}`, borderRadius:“8px”, padding:“0.55rem 0.8rem”, color:text, fontSize:“0.9rem”, width:“100%”, boxSizing:“border-box”, outline:“none”, fontFamily:“inherit” };
-const lbl = { display:“block”, color:muted, fontSize:“0.68rem”, fontFamily:”‘Barlow Condensed’,sans-serif”, letterSpacing:“2px”, marginBottom:“0.3rem” };
-const btn = (c) => ({ background:c||”#1d4ed8”, color:“white”, border:“none”, borderRadius:“8px”, padding:“0.65rem 1.2rem”, cursor:“pointer”, fontFamily:”‘Barlow Condensed’,sans-serif”, fontSize:“1rem”, letterSpacing:“1.5px” });
-
-function cid(g,f,i){ return `${g}_F${f}_${i}`; }
-
-// Firebase helpers
-async function fbGet(key) { return window.fbGet(key); }
-async function fbSet(key, value) { return window.fbSet(key, value); }
-function fbListen(key, callback) { return window.fbListen(key, callback); }
-
-function calcTabla(gid, res) {
-const tabla = {};
-GRUPOS[gid].cruces[0].forEach(([p1,p2]) => { tabla[p1]={PJ:0,PG:0,PP:0,PTS:0}; tabla[p2]={PJ:0,PG:0,PP:0,PTS:0}; });
-GRUPOS[gid].cruces.forEach((ronda,fi) => {
-ronda.forEach(([p1,p2],ci) => {
-const r = res[cid(gid,fi+1,ci)];
-if(r && r.resultado && r.resultado.trim() && r.ganador) {
-tabla[p1].PJ++; tabla[p2].PJ++;
-if(r.ganador===“p1”){ tabla[p1].PG++; tabla[p1].PTS++; tabla[p2].PP++; }
-else { tabla[p2].PG++; tabla[p2].PTS++; tabla[p1].PP++; }
-}
-});
-});
-return Object.entries(tabla).map(([p,s])=>({p,…s})).sort((a,b)=>b.PTS-a.PTS||b.PG-a.PG);
-}
-
-function getProximos(res) {
-const lista = [];
-Object.entries(GRUPOS).forEach(([gid,g]) => {
-g.cruces.forEach((ronda,fi) => {
-ronda.forEach(([p1,p2],ci) => {
-const k = cid(gid,fi+1,ci);
-const d = res[k]||{};
-const jugado = !!(d.resultado && d.resultado.trim() && d.ganador);
-if(d.fecha && !jugado) lista.push({gid,color:g.color,label:g.label,fecha:d.fecha,hora:d.hora,cancha:d.cancha,p1,p2,fi:fi+1});
-});
-});
-});
-return lista.sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.hora<b.hora?-1:1);
-}
-
-function Modal({ p1, p2, k, data, onSave, onClose, isAdmin, color }) {
-const [fecha, setFecha] = React.useState(data?.fecha||””);
-const [hora, setHora] = React.useState(data?.hora||“10:00”);
-const [cancha, setCancha] = React.useState(data?.cancha||CANCHAS[0]);
-const [resultado, setResultado] = React.useState(data?.resultado||””);
-const [ganador, setGanador] = React.useState(data?.ganador||””);
-
-const save = () => { onSave(k,{fecha,hora,cancha,resultado,ganador}); onClose(); };
-const borrar = () => { onSave(k,{fecha,hora,cancha,resultado:””,ganador:””}); onClose(); };
-
-return (
-<div style={{position:“fixed”,inset:0,background:“rgba(0,0,0,0.88)”,display:“flex”,alignItems:“center”,justifyContent:“center”,zIndex:1000,padding:“1rem”}}>
-<div style={{background:card,border:`1px solid ${color}44`,borderRadius:“16px”,padding:“1.5rem”,width:“100%”,maxWidth:“420px”,maxHeight:“90vh”,overflowY:“auto”}}>
-<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:“1.2rem”}}>
-<div>
-<div style={{…lbl,marginBottom:“0.4rem”}}>PARTIDO</div>
-<div style={{color:text,fontWeight:600,fontSize:“0.9rem”,lineHeight:1.6}}>
-{p1}<br/><span style={{color,fontSize:“0.75rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“2px”}}>VS</span><br/>{p2}
-</div>
-</div>
-<button onClick={onClose} style={{background:“none”,border:“none”,color:muted,cursor:“pointer”,fontSize:“1.4rem”}}>✕</button>
-</div>
-<div style={{marginBottom:“0.75rem”}}>
-<label style={lbl}>FECHA</label>
-<input type=“date” value={fecha} onChange={e=>setFecha(e.target.value)} style={inp}/>
-</div>
-<div style={{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“0.75rem”,marginBottom:“1rem”}}>
-<div><label style={lbl}>HORA</label><input type=“time” value={hora} onChange={e=>setHora(e.target.value)} style={inp}/></div>
-<div><label style={lbl}>CANCHA</label>
-<select value={cancha} onChange={e=>setCancha(e.target.value)} style={inp}>
-{CANCHAS.map(c=><option key={c}>{c}</option>)}
-</select>
-</div>
-</div>
-{isAdmin && (
-<div style={{borderTop:`1px solid ${border}`,paddingTop:“1rem”,marginBottom:“1rem”}}>
-<div style={{color,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.7rem”,letterSpacing:“2px”,marginBottom:“0.75rem”}}>RESULTADO (opcional)</div>
-<div style={{marginBottom:“0.75rem”}}>
-<label style={lbl}>SETS (ej: 6-3 / 4-6 / 7-5)</label>
-<input type=“text” value={resultado} onChange={e=>setResultado(e.target.value)} placeholder=“Dejá vacío si aún no se jugó” style={inp}/>
-</div>
-<label style={lbl}>GANADOR</label>
-<div style={{display:“flex”,gap:“0.5rem”,marginBottom:“0.75rem”}}>
-{[[“p1”,p1],[“p2”,p2]].map(([g,nombre])=>(
-<button key={g} onClick={()=>setGanador(ganador===g?””:g)} style={{…btn(ganador===g?color:”#1a2840”),flex:1,fontSize:“0.78rem”,padding:“0.5rem”,border:`1px solid ${ganador===g?color:border}`}}>
-{nombre.split(”/”)[0].trim()}
-</button>
-))}
-</div>
-{(data?.resultado||data?.ganador) && (
-<button onClick={borrar} style={{…btn(”#991b1b”),width:“100%”,fontSize:“0.78rem”,padding:“0.5rem”}}>🗑️ BORRAR RESULTADO</button>
-)}
-</div>
-)}
-{!isAdmin && <p style={{color:muted,fontSize:“0.72rem”,margin:“0.5rem 0 1rem”}}>🔒 Solo Felipe puede cargar resultados.</p>}
-<div style={{display:“flex”,gap:“0.75rem”}}>
-<button onClick={save} style={{...btn(color),flex:1}}>GUARDAR</button>
-<button onClick={onClose} style={{…btn(”#1a2840”),padding:“0.65rem 1rem”}}>CANCELAR</button>
-</div>
-</div>
-</div>
-);
-}
-
-function Tabla({ gid, res }) {
-const tabla = calcTabla(gid, res);
-const color = GRUPOS[gid].color;
-return (
-<div style={{overflowX:“auto”}}>
-<table style={{width:“100%”,borderCollapse:“collapse”,minWidth:“360px”}}>
-<thead><tr>{[”#”,“PAREJA”,“PJ”,“PG”,“PP”,“PTS”].map(h=>(
-<th key={h} style={{padding:“0.5rem 0.6rem”,textAlign:h===“PAREJA”?“left”:“center”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.72rem”,letterSpacing:“2px”,color:muted,borderBottom:`1px solid ${border}`}}>{h}</th>
-))}</tr></thead>
-<tbody>{tabla.map(({p,PJ,PG,PP,PTS},i)=>(
-<tr key={p} style={{borderBottom:`1px solid ${border}22`,background:i===0?`${color}22`:i===1?`${color}11`:“transparent”}}>
-<td style={{padding:“0.5rem 0.6rem”,textAlign:“center”,color:i<2?color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”,fontWeight:700,fontSize:“1.1rem”}}>{i===0?“🥇”:i===1?“🥈”:i+1}</td>
-<td style={{padding:“0.5rem 0.6rem”,color:i<2?text:muted,fontSize:“0.82rem”,fontWeight:i<2?700:400}}>
-{p} {i<2&&<span style={{color,fontSize:“0.65rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“1px”,marginLeft:“4px”}}>CLASIFICA</span>}
-</td>
-<td style={{padding:“0.5rem 0.6rem”,textAlign:“center”,color:muted,fontSize:“0.82rem”}}>{PJ}</td>
-<td style={{padding:“0.5rem 0.6rem”,textAlign:“center”,color:”#4ade80”,fontSize:“0.82rem”}}>{PG}</td>
-<td style={{padding:“0.5rem 0.6rem”,textAlign:“center”,color:”#f87171”,fontSize:“0.82rem”}}>{PP}</td>
-<td style={{padding:“0.5rem 0.6rem”,textAlign:“center”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“1.1rem”,fontWeight:700,color}}>{PTS}</td>
-</tr>
-))}</tbody>
-</table>
-<div style={{marginTop:“0.75rem”,fontSize:“0.7rem”,color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“1px”}}>
-🏆 Los 2 primeros clasifican a la Gran Final del 23 de Mayo
-</div>
-</div>
-);
-}
-
-function Proximos({ res }) {
-const lista = getProximos(res);
-if(lista.length===0) return <div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>No hay partidos agendados todavía.</div>;
-return (
-<div style={{display:“grid”,gridTemplateColumns:“repeat(auto-fill,minmax(280px,1fr))”,gap:“0.9rem”}}>
-{lista.map((p,i)=>(
-<div key={i} style={{background:card,border:`1px solid ${p.color}44`,borderRadius:“12px”,padding:“1rem”}}>
-<div style={{display:“flex”,justifyContent:“space-between”,alignItems:“center”,marginBottom:“0.6rem”}}>
-<span style={{fontSize:“0.65rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“1px”,background:p.color+“22”,color:p.color,padding:“2px 8px”,borderRadius:“10px”}}>{p.label}</span>
-<span style={{fontSize:“0.65rem”,color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”}}>FECHA {p.fi}</span>
-</div>
-<div style={{fontSize:“0.88rem”,color:text,lineHeight:1.6,marginBottom:“0.6rem”}}>
-<div style={{fontWeight:600}}>{p.p1}</div>
-<div style={{color:p.color,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.7rem”,letterSpacing:“3px”,margin:“2px 0”}}>VS</div>
-<div style={{fontWeight:600}}>{p.p2}</div>
-</div>
-<div style={{paddingTop:“0.6rem”,borderTop:`1px solid ${border}`,fontSize:“0.78rem”,color:muted,display:“flex”,gap:“0.75rem”,flexWrap:“wrap”}}>
-<span>📅 {p.fecha?.split(”-”).reverse().join(”/”)}</span>
-<span>🕐 {p.hora}</span>
-<span>🎾 {p.cancha?.replace(“Cancha “,“C”)}</span>
-</div>
-</div>
-))}
-</div>
-);
-}
-
-function Avisos({ avisos, isAdmin, onSave }) {
-const [nuevo, setNuevo] = React.useState(””);
-const [editIdx, setEditIdx] = React.useState(null);
-const [editTxt, setEditTxt] = React.useState(””);
-
-const agregar = () => {
-if(!nuevo.trim()) return;
-const fecha = new Date().toLocaleDateString(“es-UY”);
-onSave([{texto:nuevo.trim(),fecha},…avisos]);
-setNuevo(””);
-};
-const borrar = (i) => onSave(avisos.filter((_,idx)=>idx!==i));
-const guardarEdit = (i) => { const a=[…avisos]; a[i]={…a[i],texto:editTxt}; onSave(a); setEditIdx(null); };
-
-return (
-<div>
-{isAdmin && (
-<div style={{background:card,border:`1px solid #7c3aed44`,borderRadius:“12px”,padding:“1rem”,marginBottom:“1.2rem”}}>
-<label style={{…lbl,color:”#a78bfa”,marginBottom:“0.5rem”}}>NUEVO AVISO</label>
-<textarea value={nuevo} onChange={e=>setNuevo(e.target.value)} placeholder=“Escribí un aviso para los jugadores…”
-style={{…inp,minHeight:“80px”,resize:“vertical”,marginBottom:“0.75rem”}}/>
-<button onClick={agregar} style={{…btn(”#7c3aed”),width:“100%”,padding:“0.7rem”}}>📢 PUBLICAR AVISO</button>
-</div>
-)}
-{avisos.length===0
-? <div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>No hay avisos publicados.</div>
-: <div style={{display:“flex”,flexDirection:“column”,gap:“0.75rem”}}>
-{avisos.map((a,i)=>(
-<div key={i} style={{background:card,border:`1px solid ${border}`,borderRadius:“12px”,padding:“1rem”}}>
-<div style={{display:“flex”,justifyContent:“space-between”,alignItems:“flex-start”,marginBottom:“0.4rem”}}>
-<span style={{fontSize:“0.65rem”,color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“1px”}}>📅 {a.fecha}</span>
-{isAdmin && (
-<div style={{display:“flex”,gap:“0.4rem”}}>
-<button onClick={()=>{setEditIdx(i);setEditTxt(a.texto);}} style={{background:“none”,border:“none”,color:muted,cursor:“pointer”,fontSize:“0.8rem”}}>✏️</button>
-<button onClick={()=>borrar(i)} style={{background:“none”,border:“none”,color:”#f87171”,cursor:“pointer”,fontSize:“0.8rem”}}>🗑️</button>
-</div>
-)}
-</div>
-{editIdx===i
-? <div>
-<textarea value={editTxt} onChange={e=>setEditTxt(e.target.value)} style={{…inp,minHeight:“60px”,resize:“vertical”,marginBottom:“0.5rem”}}/>
-<div style={{display:“flex”,gap:“0.5rem”}}>
-<button onClick={()=>guardarEdit(i)} style={{…btn(”#7c3aed”),flex:1,padding:“0.4rem”,fontSize:“0.8rem”}}>GUARDAR</button>
-<button onClick={()=>setEditIdx(null)} style={{…btn(”#1a2840”),padding:“0.4rem 0.8rem”,fontSize:“0.8rem”}}>CANCELAR</button>
-</div>
-</div>
-: <div style={{color:text,fontSize:“0.88rem”,lineHeight:1.6,whiteSpace:“pre-wrap”}}>{a.texto}</div>
-}
-</div>
-))}
-</div>
-}
-</div>
-);
-}
-
-function Grupo({ gid, res, onSave, isAdmin }) {
-const g = GRUPOS[gid];
-const [tab, setTab] = React.useState(“cruces”);
-const [fecha, setFecha] = React.useState(1);
-const [modal, setModal] = React.useState(null);
-
-return (
-<div>
-<div style={{display:“flex”,borderBottom:`1px solid ${border}`,marginBottom:“1.5rem”}}>
-{[“cruces”,“tabla”].map(t=>(
-<button key={t} onClick={()=>setTab(t)} style={{background:“none”,border:“none”,padding:“0.75rem 1.2rem”,cursor:“pointer”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.9rem”,letterSpacing:“2px”,color:tab===t?g.color:muted,borderBottom:tab===t?`2px solid ${g.color}`:“2px solid transparent”}}>
-{t===“cruces”?“📅 CRUCES”:“🏆 TABLA”}
-</button>
-))}
-</div>
-{tab===“tabla” && <Tabla gid={gid} res={res}/>}
-{tab===“cruces” && <>
-<div style={{display:“flex”,gap:“0.4rem”,flexWrap:“wrap”,marginBottom:“1.2rem”}}>
-{g.cruces.map((_,i)=>(
-<button key={i} onClick={()=>setFecha(i+1)} style={{background:fecha===i+1?g.color:card,color:fecha===i+1?“white”:muted,border:`1px solid ${fecha===i+1?g.color:border}`,padding:“0.3rem 0.8rem”,borderRadius:“20px”,cursor:“pointer”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.82rem”}}>
-F{i+1}
-</button>
-))}
-</div>
-<div style={{display:“grid”,gridTemplateColumns:“repeat(auto-fill,minmax(260px,1fr))”,gap:“0.9rem”}}>
-{g.cruces[fecha-1].map(([p1,p2],ci)=>{
-const k = cid(gid,fecha,ci);
-const d = res[k]||{};
-const jugado = !!(d.resultado && d.resultado.trim() && d.ganador);
-const agendado = !!d.fecha && !jugado;
-return (
-<div key={k} onClick={()=>isAdmin&&setModal({p1,p2,k,d})}
-style={{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:“12px”,padding:“1rem”,cursor:isAdmin?“pointer”:“default”,transition:“transform 0.15s”}}
-onMouseEnter={e=>{if(isAdmin)e.currentTarget.style.transform=“translateY(-2px)”;}}
-onMouseLeave={e=>e.currentTarget.style.transform=“translateY(0)”}
->
-<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:“0.6rem”}}>
-<span style={{fontSize:“0.72rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“2px”,color:muted}}>FECHA {fecha}</span>
-<span style={{fontSize:“0.62rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,background:jugado?g.color:agendado?g.color+“33”:border,color:jugado?“white”:agendado?g.color:muted,padding:“2px 8px”,borderRadius:“10px”}}>
-{jugado?“✓ JUGADO”:agendado?“📅 AGENDADO”:“SIN FECHA”}
-</span>
-</div>
-<div style={{fontSize:“0.88rem”,color:text,lineHeight:1.6}}>
-<div style={{fontWeight:600,color:d.ganador===“p1”?g.color:text}}>{p1}</div>
-<div style={{color:g.color,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.7rem”,letterSpacing:“3px”,margin:“2px 0”}}>VS</div>
-<div style={{fontWeight:600,color:d.ganador===“p2”?g.color:text}}>{p2}</div>
-</div>
-{agendado&&(
-<div style={{marginTop:“0.6rem”,paddingTop:“0.6rem”,borderTop:`1px solid ${border}`,fontSize:“0.78rem”,color:muted,display:“flex”,gap:“0.75rem”,flexWrap:“wrap”}}>
-<span>📅 {d.fecha?.split(”-”).reverse().join(”/”)}</span>
-<span>🕐 {d.hora}</span>
-<span>🎾 {d.cancha?.replace(“Cancha “,“C”)}</span>
-</div>
-)}
-{jugado&&<div style={{marginTop:“0.4rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.82rem”,color:g.color}}>{d.resultado}</div>}
-{isAdmin&&<div style={{marginTop:“0.5rem”,fontSize:“0.68rem”,color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”}}>✏️ Tocá para editar</div>}
-</div>
-);
-})}
-</div>
-</>}
-{modal&&<Modal p1={modal.p1} p2={modal.p2} k={modal.k} data={res[modal.k]||{}} onSave={onSave} onClose={()=>setModal(null)} isAdmin={isAdmin} color={g.color}/>}
-</div>
-);
-}
-
-function Login({ onLogin }) {
-const [step, setStep] = React.useState(“choose”);
-const [pin, setPin] = React.useState(””);
-const [pin2, setPin2] = React.useState(””);
-const [err, setErr] = React.useState(””);
-
-const goAdmin = async () => {
-const stored = localStorage.getItem(PIN_KEY);
-if(stored) setStep(“enter”); else setStep(“setup”);
-};
-const setup = () => {
-if(pin.length<4){setErr(“Mínimo 4 caracteres”);return;}
-if(pin!==pin2){setErr(“No coinciden”);return;}
-localStorage.setItem(PIN_KEY,pin); onLogin(true);
-};
-const enter = () => {
-const stored = localStorage.getItem(PIN_KEY);
-if(pin===stored) onLogin(true);
-else { setErr(“Contraseña incorrecta”); setPin(””); }
+// ── State ─────────────────────────────────────────────
+let STATE = {
+  loggedIn: false,
+  admin: false,
+  seccion: "inicio",
+  gid: "G+7",
+  fecha: 1,
+  tab: "cruces",
+  res: {},
+  avisos: [],
+  modal: null,
+  loginStep: "choose",
+  pin: "",
+  pin2: "",
+  loginErr: "",
 };
 
-return (
-<div style={{minHeight:“100vh”,background:bg,display:“flex”,alignItems:“center”,justifyContent:“center”,padding:“1rem”,backgroundImage:“radial-gradient(ellipse at 30% 40%, #0c1f3f 0%, transparent 60%)”}}>
-<div style={{textAlign:“center”,width:“100%”,maxWidth:“320px”}}>
-<img src={LOGO} alt=“Logo” onError={e=>e.target.style.display=“none”} style={{width:“150px”,height:“150px”,objectFit:“contain”,margin:“0 auto 0.5rem”,display:“block”}}/>
-<div style={{color:muted,letterSpacing:“4px”,fontSize:“0.72rem”,marginBottom:“2rem”}}>MARZO — MAYO 2026</div>
-<div style={{background:card,border:`1px solid ${border}`,borderRadius:“16px”,padding:“1.75rem”}}>
-{step===“choose”&&<>
-<p style={{color:muted,fontSize:“0.8rem”,marginBottom:“1.2rem”}}>¿Cómo querés ingresar?</p>
-<button onClick={()=>onLogin(false)} style={{…btn(”#1d4ed8”),width:“100%”,padding:“0.85rem”,marginBottom:“0.75rem”,letterSpacing:“2px”}}>👀 VER LA LIGA</button>
-<button onClick={goAdmin} style={{…btn(”#7c3aed”),width:“100%”,padding:“0.85rem”,letterSpacing:“2px”}}>🔑 ACCESO ADMIN</button>
-<p style={{color:muted,fontSize:“0.68rem”,marginTop:“1rem”}}>Solo Felipe puede cargar fechas y resultados.</p>
-</>}
-{step===“setup”&&<>
-<div style={{color:”#a78bfa”,fontSize:“0.72rem”,letterSpacing:“2px”,marginBottom:“1rem”}}>🔑 CREÁ TU CONTRASEÑA</div>
-<label style={{…lbl,textAlign:“left”,display:“block”,marginBottom:“0.3rem”}}>CONTRASEÑA</label>
-<input type=“password” placeholder=“Mínimo 4 caracteres” value={pin} onChange={e=>{setPin(e.target.value);setErr(””);}} style={{…inp,marginBottom:“0.75rem”}}/>
-<label style={{…lbl,textAlign:“left”,display:“block”,marginBottom:“0.3rem”}}>CONFIRMAR</label>
-<input type=“password” placeholder=“Repetí” value={pin2} onChange={e=>{setPin2(e.target.value);setErr(””);}} onKeyDown={e=>e.key===“Enter”&&setup()} style={{…inp,marginBottom:“0.75rem”}}/>
-{err&&<div style={{color:”#f87171”,fontSize:“0.78rem”,marginBottom:“0.75rem”}}>{err}</div>}
-<button onClick={setup} style={{…btn(”#7c3aed”),width:“100%”,padding:“0.8rem”}}>CREAR</button>
-</>}
-{step===“enter”&&<>
-<div style={{color:”#a78bfa”,fontSize:“0.72rem”,letterSpacing:“2px”,marginBottom:“1rem”}}>🔑 ACCESO ADMIN</div>
-<label style={{…lbl,textAlign:“left”,display:“block”,marginBottom:“0.3rem”}}>CONTRASEÑA</label>
-<input type=“password” placeholder=“Tu contraseña” value={pin} autoFocus onChange={e=>{setPin(e.target.value);setErr(””);}} onKeyDown={e=>e.key===“Enter”&&enter()} style={{…inp,marginBottom:“0.75rem”}}/>
-{err&&<div style={{color:”#f87171”,fontSize:“0.78rem”,marginBottom:“0.75rem”}}>{err}</div>}
-<button onClick={enter} style={{…btn(”#7c3aed”),width:“100%”,padding:“0.8rem”,marginBottom:“0.5rem”}}>INGRESAR</button>
-<button onClick={()=>{setStep(“choose”);setPin(””);setErr(””);}} style={{background:“none”,border:“none”,color:muted,cursor:“pointer”,fontSize:“0.78rem”,width:“100%”}}>← Volver</button>
-</>}
-</div>
-</div>
-</div>
-);
+function setState(patch){ Object.assign(STATE, patch); render(); }
+
+// ── Helpers ───────────────────────────────────────────
+const bg="#06090f",card="#0c1220",border="#1a2840",text="#dbeafe",muted="#4a6fa5";
+function cid(g,f,i){return `${g}_F${f}_${i}`;}
+function fmtFecha(f){return f?f.split("-").reverse().join("/"):"";}
+
+function calcTabla(gid){
+  const t={};
+  GRUPOS[gid].cruces[0].forEach(([p1,p2])=>{t[p1]={PJ:0,PG:0,PP:0,PTS:0};t[p2]={PJ:0,PG:0,PP:0,PTS:0};});
+  GRUPOS[gid].cruces.forEach((ronda,fi)=>{
+    ronda.forEach(([p1,p2],ci)=>{
+      const r=STATE.res[cid(gid,fi+1,ci)];
+      if(r&&r.resultado&&r.resultado.trim()&&r.ganador){
+        t[p1].PJ++;t[p2].PJ++;
+        if(r.ganador==="p1"){t[p1].PG++;t[p1].PTS++;t[p2].PP++;}
+        else{t[p2].PG++;t[p2].PTS++;t[p1].PP++;}
+      }
+    });
+  });
+  return Object.entries(t).map(([p,s])=>({p,...s})).sort((a,b)=>b.PTS-a.PTS||b.PG-a.PG);
 }
 
-function App() {
-const [admin, setAdmin] = React.useState(false);
-const [loggedIn, setLoggedIn] = React.useState(false);
-const [res, setRes] = React.useState({});
-const [avisos, setAvisos] = React.useState([]);
-const [seccion, setSeccion] = React.useState(“inicio”);
-const [gid, setGid] = React.useState(“G+7”);
-const [fbReady, setFbReady] = React.useState(true);
-
-React.useEffect(()=>{
-// Escuchar cambios en tiempo real
-const unsubRes = fbListen(“resultados”, (val)=>{
-try { setRes(JSON.parse(val)); } catch {}
-});
-const unsubAvi = fbListen(“avisos”, (val)=>{
-try { setAvisos(JSON.parse(val)); } catch {}
-});
-// Cargar datos iniciales
-fbGet(“resultados”).then(v=>{ if(v) try{setRes(JSON.parse(v));}catch{} });
-fbGet(“avisos”).then(v=>{ if(v) try{setAvisos(JSON.parse(v));}catch{} });
-return ()=>{ unsubRes(); unsubAvi(); };
-},[]);
-
-const save = async(k,d)=>{
-const n={…res,[k]:d};
-setRes(n);
-await fbSet(“resultados”, JSON.stringify(n));
-};
-
-const saveAvisos = async(a)=>{
-setAvisos(a);
-await fbSet(“avisos”, JSON.stringify(a));
-};
-
-if(!loggedIn) return <Login onLogin={(a)=>{setAdmin(a);setLoggedIn(true);}}/>;
-
-const proximos = getProximos(res);
-const g = GRUPOS[gid];
-
-const SECCIONES = [
-{id:“inicio”,label:“🏠 INICIO”},
-{id:“proximos”,label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},
-{id:“grupos”,label:“🎾 GRUPOS”},
-{id:“avisos”,label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`},
-];
-
-return (
-<div style={{minHeight:“100vh”,background:bg,fontFamily:”‘Lato’,sans-serif”,color:text}}>
-<header style={{background:`${card}ee`,borderBottom:`1px solid ${border}`,padding:“0.8rem 1rem”,display:“flex”,alignItems:“center”,justifyContent:“space-between”,position:“sticky”,top:0,zIndex:100}}>
-<div style={{display:“flex”,alignItems:“center”,gap:“0.6rem”}}>
-<img src={LOGO} alt=“Logo” onError={e=>e.target.style.display=“none”} style={{width:“36px”,height:“36px”,objectFit:“contain”}}/>
-<div>
-<div style={{fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“1.15rem”,letterSpacing:“3px”,fontWeight:800,lineHeight:1}}>LIGA PIRIA PÁDEL</div>
-<div style={{fontSize:“0.6rem”,color:muted,letterSpacing:“3px”}}>MARZO–MAYO 2026</div>
-</div>
-</div>
-<div style={{display:“flex”,alignItems:“center”,gap:“0.6rem”}}>
-{admin&&<span style={{background:”#7c3aed22”,border:“1px solid #7c3aed”,color:”#a78bfa”,padding:“2px 8px”,borderRadius:“10px”,fontSize:“0.65rem”,fontFamily:”‘Barlow Condensed’,sans-serif”}}>🔑 ADMIN</span>}
-<button onClick={()=>setLoggedIn(false)} style={{background:“none”,border:`1px solid ${border}`,color:muted,padding:“0.2rem 0.5rem”,borderRadius:“6px”,cursor:“pointer”,fontSize:“0.68rem”}}>Salir</button>
-</div>
-</header>
-
-```
-  <div style={{background:card,borderBottom:`1px solid ${border}`,display:"flex",overflowX:"auto"}}>
-    {SECCIONES.map(s=>(
-      <button key={s.id} onClick={()=>setSeccion(s.id)} style={{background:"none",border:"none",padding:"0.9rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.82rem",letterSpacing:"1px",color:seccion===s.id?"#dbeafe":muted,borderBottom:seccion===s.id?"3px solid #3b82f6":"3px solid transparent",whiteSpace:"nowrap"}}>
-        {s.label}
-      </button>
-    ))}
-  </div>
-
-  <div style={{padding:"1.2rem",maxWidth:"1100px",margin:"0 auto"}}>
-    {seccion==="inicio"&&(
-      <div>
-        <div style={{textAlign:"center",padding:"2rem 1rem",marginBottom:"1.5rem"}}>
-          <img src={LOGO} alt="Logo" onError={e=>e.target.style.display="none"} style={{width:"120px",height:"120px",objectFit:"contain",margin:"0 auto 1rem",display:"block"}}/>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"2rem",fontWeight:800,letterSpacing:"4px",marginBottom:"0.3rem"}}>LIGA PIRIA PÁDEL</div>
-          <div style={{color:muted,letterSpacing:"3px",fontSize:"0.8rem",marginBottom:"1.5rem"}}>TEMPORADA MARZO — MAYO 2026</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:"0.75rem",maxWidth:"500px",margin:"0 auto"}}>
-            {[["3","GRUPOS"],["24","PAREJAS"],["7","FECHAS"],["23 MAY","GRAN FINAL"]].map(([n,l])=>(
-              <div key={l} style={{background:card,border:`1px solid ${border}`,borderRadius:"12px",padding:"1rem"}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.8rem",fontWeight:800,color:"#3b82f6"}}>{n}</div>
-                <div style={{color:muted,fontSize:"0.72rem",letterSpacing:"2px"}}>{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {avisos.length>0&&(
-          <div style={{marginBottom:"1.5rem"}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1rem",letterSpacing:"3px",color:"#a78bfa",marginBottom:"0.75rem"}}>📢 ÚLTIMOS AVISOS</div>
-            {avisos.slice(0,2).map((a,i)=>(
-              <div key={i} style={{background:card,border:`1px solid #7c3aed33`,borderRadius:"10px",padding:"0.9rem",marginBottom:"0.5rem"}}>
-                <div style={{fontSize:"0.65rem",color:muted,marginBottom:"0.3rem"}}>📅 {a.fecha}</div>
-                <div style={{color:text,fontSize:"0.85rem"}}>{a.texto}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        {proximos.length>0&&(
-          <div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1rem",letterSpacing:"3px",color:"#dbeafe",marginBottom:"0.75rem"}}>📅 PRÓXIMOS PARTIDOS</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:"0.75rem"}}>
-              {proximos.slice(0,4).map((p,i)=>(
-                <div key={i} style={{background:card,border:`1px solid ${p.color}44`,borderRadius:"10px",padding:"0.9rem"}}>
-                  <div style={{fontSize:"0.65rem",fontFamily:"'Barlow Condensed',sans-serif",color:p.color,marginBottom:"0.4rem"}}>{p.label} · FECHA {p.fi}</div>
-                  <div style={{fontSize:"0.85rem",lineHeight:1.5,marginBottom:"0.5rem"}}>
-                    <span style={{fontWeight:600}}>{p.p1}</span> <span style={{color:p.color}}>vs</span> <span style={{fontWeight:600}}>{p.p2}</span>
-                  </div>
-                  <div style={{fontSize:"0.75rem",color:muted}}>📅 {p.fecha?.split("-").reverse().join("/")} · 🕐 {p.hora} · 🎾 {p.cancha?.replace("Cancha ","C")}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    )}
-
-    {seccion==="proximos"&&(
-      <div>
-        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.2rem"}}>
-          <div style={{width:"4px",height:"32px",background:"#3b82f6",borderRadius:"2px"}}/>
-          <div>
-            <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.4rem",letterSpacing:"3px",margin:0,fontWeight:700}}>PRÓXIMOS PARTIDOS</h2>
-            <div style={{color:muted,fontSize:"0.75rem"}}>Todos los partidos agendados ordenados por fecha</div>
-          </div>
-        </div>
-        <Proximos res={res}/>
-      </div>
-    )}
-
-    {seccion==="grupos"&&(
-      <div>
-        <div style={{background:card,borderBottom:`1px solid ${border}`,display:"flex",overflowX:"auto",marginBottom:"1.2rem",borderRadius:"10px"}}>
-          {Object.entries(GRUPOS).map(([id,gr])=>(
-            <button key={id} onClick={()=>setGid(id)} style={{background:"none",border:"none",padding:"0.8rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.82rem",letterSpacing:"1.5px",color:gid===id?gr.color:muted,borderBottom:gid===id?`3px solid ${gr.color}`:"3px solid transparent",whiteSpace:"nowrap"}}>
-              {id==="G+7"?"🟡":id==="G1+11"?"🔵":"🟢"} {gr.label}
-            </button>
-          ))}
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.2rem"}}>
-          <div style={{width:"4px",height:"32px",background:g.color,borderRadius:"2px"}}/>
-          <div>
-            <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.4rem",letterSpacing:"3px",margin:0,fontWeight:700}}>{g.label.toUpperCase()}</h2>
-            <div style={{color:muted,fontSize:"0.75rem"}}>8 parejas · 7 fechas · Final 23 de Mayo</div>
-          </div>
-        </div>
-        {!admin&&<div style={{background:"#1a284088",border:`1px solid ${border}`,borderRadius:"10px",padding:"0.6rem 1rem",marginBottom:"1rem",fontSize:"0.78rem",color:muted}}>👁 Modo lectura — Solo Felipe puede cargar fechas y resultados.</div>}
-        <Grupo gid={gid} res={res} onSave={save} isAdmin={admin}/>
-      </div>
-    )}
-
-    {seccion==="avisos"&&(
-      <div>
-        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",marginBottom:"1.2rem"}}>
-          <div style={{width:"4px",height:"32px",background:"#a78bfa",borderRadius:"2px"}}/>
-          <div>
-            <h2 style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.4rem",letterSpacing:"3px",margin:0,fontWeight:700}}>TABLÓN DE AVISOS</h2>
-            <div style={{color:muted,fontSize:"0.75rem"}}>Comunicados y novedades de la liga</div>
-          </div>
-        </div>
-        <Avisos avisos={avisos} isAdmin={admin} onSave={saveAvisos}/>
-      </div>
-    )}
-  </div>
-  <div style={{textAlign:"center",padding:"1.5rem",color:muted,fontSize:"0.72rem",letterSpacing:"2px",fontFamily:"'Barlow Condensed',sans-serif"}}>⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐</div>
-</div>
-```
-
-);
+function getProximos(){
+  const lista=[];
+  Object.entries(GRUPOS).forEach(([gid,g])=>{
+    g.cruces.forEach((ronda,fi)=>{
+      ronda.forEach(([p1,p2],ci)=>{
+        const k=cid(gid,fi+1,ci);
+        const d=STATE.res[k]||{};
+        const jugado=!!(d.resultado&&d.resultado.trim()&&d.ganador);
+        if(d.fecha&&!jugado)lista.push({gid,color:g.color,label:g.label,fecha:d.fecha,hora:d.hora,cancha:d.cancha,p1,p2,fi:fi+1});
+      });
+    });
+  });
+  return lista.sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:0);
 }
 
-ReactDOM.render(<App/>, document.getElementById(“root”));
+async function saveRes(k,d){
+  const n={...STATE.res,[k]:d};
+  setState({res:n,modal:null});
+  await fbSet("resultados",JSON.stringify(n));
+}
+
+async function saveAvisos(a){
+  setState({avisos:a});
+  await fbSet("avisos",JSON.stringify(a));
+}
+
+// ── HTML builders ─────────────────────────────────────
+function h(tag,attrs,children){
+  const el=document.createElement(tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>{
+    if(k==="style"&&typeof v==="object")Object.assign(el.style,v);
+    else if(k.startsWith("on"))el[k]=v;
+    else el.setAttribute(k,v);
+  });
+  (children||[]).forEach(c=>{
+    if(!c)return;
+    if(typeof c==="string")el.appendChild(document.createTextNode(c));
+    else el.appendChild(c);
+  });
+  return el;
+}
+
+function renderLogin(){
+  const {loginStep,pin,pin2,loginErr}=STATE;
+  const logo=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"150px",height:"150px",objectFit:"contain",display:"block",margin:"0 auto .5rem"}});
+  const sub=h("div",{style:{color:muted,letterSpacing:"4px",fontSize:".72rem",marginBottom:"2rem",fontFamily:"'Barlow Condensed',sans-serif"}},[" MARZO — MAYO 2026"]);
+
+  let inner;
+  if(loginStep==="choose"){
+    const b1=h("button",{class:"btn",style:{background:"#1d4ed8",width:"100%",padding:".85rem",marginBottom:".75rem",letterSpacing:"2px"},onclick:()=>setState({loggedIn:true,admin:false})},["👀 VER LA LIGA"]);
+    const b2=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".85rem",letterSpacing:"2px"},onclick:()=>{
+      const stored=localStorage.getItem(PIN_KEY);
+      setState({loginStep:stored?"enter":"setup",pin:"",loginErr:""});
+    }},["🔑 ACCESO ADMIN"]);
+    const note=h("p",{style:{color:muted,fontSize:".68rem",marginTop:"1rem"}},["Solo Felipe puede cargar fechas y resultados."]);
+    const p=h("p",{style:{color:muted,fontSize:".8rem",marginBottom:"1.2rem"}},["¿Cómo querés ingresar?"]);
+    inner=[p,b1,b2,note];
+  } else if(loginStep==="setup"){
+    const title=h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 CREÁ TU CONTRASEÑA"]);
+    const l1=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]);
+    const i1=h("input",{class:"inp",type:"password",placeholder:"Mínimo 4 caracteres",value:pin,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin:e.target.value,loginErr:""})});
+    const l2=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONFIRMAR"]);
+    const i2=h("input",{class:"inp",type:"password",placeholder:"Repetí",value:pin2,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin2:e.target.value,loginErr:""})});
+    const err=loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null;
+    const b=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem"},onclick:()=>{
+      if(STATE.pin.length<4){setState({loginErr:"Mínimo 4 caracteres"});return;}
+      if(STATE.pin!==STATE.pin2){setState({loginErr:"No coinciden"});return;}
+      localStorage.setItem(PIN_KEY,STATE.pin);
+      setState({loggedIn:true,admin:true});
+    }},["CREAR"]);
+    inner=[title,l1,i1,l2,i2,err,b];
+  } else {
+    const title=h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 ACCESO ADMIN"]);
+    const l1=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]);
+    const i1=h("input",{class:"inp",type:"password",placeholder:"Tu contraseña",value:pin,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin:e.target.value,loginErr:""})});
+    const err=loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null;
+    const b=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem",marginBottom:".5rem"},onclick:()=>{
+      const stored=localStorage.getItem(PIN_KEY);
+      if(STATE.pin===stored)setState({loggedIn:true,admin:true});
+      else setState({loginErr:"Contraseña incorrecta",pin:""});
+    }},["INGRESAR"]);
+    const back=h("button",{style:{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:".78rem",width:"100%"},onclick:()=>setState({loginStep:"choose",pin:"",loginErr:""})},["← Volver"]);
+    inner=[title,l1,i1,err,b,back];
+  }
+
+  const box=h("div",{class:"card",style:{padding:"1.75rem",borderRadius:"16px"}},inner.filter(Boolean));
+  const wrap=h("div",{style:{textAlign:"center",width:"100%",maxWidth:"320px",padding:"1rem"}},[logo,sub,box]);
+  const page=h("div",{style:{minHeight:"100vh",background:bg,display:"flex",alignItems:"center",justifyContent:"center",backgroundImage:"radial-gradient(ellipse at 30% 40%, #0c1f3f 0%, transparent 60%)"}},[wrap]);
+  return page;
+}
+
+function renderModal(){
+  const {modal,res,admin}=STATE;
+  if(!modal)return null;
+  const {p1,p2,k}=modal;
+  const d=res[k]||{};
+  let fecha=d.fecha||"",hora=d.hora||"10:00",cancha=d.cancha||CANCHAS[0],resultado=d.resultado||"",ganador=d.ganador||"";
+  const color=GRUPOS[modal.gid].color;
+
+  const overlay=h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:"1rem"}});
+
+  const box=h("div",{style:{background:card,border:`1px solid ${color}44`,borderRadius:"16px",padding:"1.5rem",width:"100%",maxWidth:"420px",maxHeight:"90vh",overflowY:"auto"}});
+
+  // header
+  const closeBtn=h("button",{style:{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:"1.4rem"},onclick:()=>setState({modal:null})},["✕"]);
+  const pTitle=h("div",{style:{color:text,fontWeight:600,fontSize:".9rem",lineHeight:1.6}},[p1,h("br"),h("span",{style:{color,fontSize:".75rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"2px"}},["VS"]),h("br",[]),p2]);
+  const hdr=h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"1.2rem"}},[pTitle,closeBtn]);
+
+  // fecha input
+  const inpFecha=h("input",{class:"inp",type:"date",value:fecha,oninput:e=>fecha=e.target.value});
+  const inpHora=h("input",{class:"inp",type:"time",value:hora,oninput:e=>hora=e.target.value});
+  const selCancha=h("select",{class:"inp",oninput:e=>cancha=e.target.value},CANCHAS.map(c=>{const o=h("option",{value:c},[c]);if(c===cancha)o.selected=true;return o;}));
+
+  const fechaSection=h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["FECHA"]),inpFecha]);
+  const grid=h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".75rem",marginBottom:"1rem"}},[
+    h("div",{},[h("label",{class:"lbl"},["HORA"]),inpHora]),
+    h("div",{},[h("label",{class:"lbl"},["CANCHA"]),selCancha]),
+  ]);
+
+  let resSection=null;
+  if(admin){
+    const inpRes=h("input",{class:"inp",type:"text",placeholder:"Dejá vacío si aún no se jugó",value:resultado,oninput:e=>resultado=e.target.value});
+    const btnP1=h("button",{class:"btn",style:{flex:1,fontSize:".78rem",padding:".5rem",background:ganador==="p1"?color:"#1a2840",border:`1px solid ${ganador==="p1"?color:border}`},onclick:()=>{ganador=ganador==="p1"?"":"p1";btnP1.style.background=ganador==="p1"?color:"#1a2840";btnP2.style.background=ganador==="p2"?color:"#1a2840";}},[p1.split("/")[0].trim()]);
+    const btnP2=h("button",{class:"btn",style:{flex:1,fontSize:".78rem",padding:".5rem",background:ganador==="p2"?color:"#1a2840",border:`1px solid ${ganador==="p2"?color:border}`},onclick:()=>{ganador=ganador==="p2"?"":"p2";btnP1.style.background=ganador==="p1"?color:"#1a2840";btnP2.style.background=ganador==="p2"?color:"#1a2840";}},[p2.split("/")[0].trim()]);
+    const borrarBtn=(d.resultado||d.ganador)?h("button",{class:"btn",style:{background:"#991b1b",width:"100%",fontSize:".78rem",padding:".5rem",marginTop:".5rem"},onclick:()=>saveRes(k,{fecha,hora,cancha,resultado:"",ganador:""})},["\uD83D\uDDD1\uFE0F BORRAR RESULTADO"]):null;
+    resSection=h("div",{style:{borderTop:`1px solid ${border}`,paddingTop:"1rem",marginBottom:"1rem"}},[
+      h("div",{class:"bc",style:{color,fontSize:".7rem",letterSpacing:"2px",marginBottom:".75rem"}},["RESULTADO (opcional)"]),
+      h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["SETS"]),inpRes]),
+      h("label",{class:"lbl"},["GANADOR"]),
+      h("div",{style:{display:"flex",gap:".5rem",marginBottom:".5rem"}},[btnP1,btnP2]),
+      borrarBtn,
+    ].filter(Boolean));
+  } else {
+    resSection=h("p",{style:{color:muted,fontSize:".72rem",margin:".5rem 0 1rem"}},["🔒 Solo Felipe puede cargar resultados."]);
+  }
+
+  const saveBtn=h("button",{class:"btn",style:{background:color,flex:1},onclick:()=>saveRes(k,{fecha,hora,cancha,resultado,ganador})},["GUARDAR"]);
+  const cancelBtn=h("button",{class:"btn",style:{background:"#1a2840",padding:".65rem 1rem"},onclick:()=>setState({modal:null})},["CANCELAR"]);
+  const footer=h("div",{style:{display:"flex",gap:".75rem"}},[saveBtn,cancelBtn]);
+
+  box.append(hdr,fechaSection,grid,resSection,footer);
+  overlay.appendChild(box);
+  overlay.onclick=e=>{if(e.target===overlay)setState({modal:null});};
+  return overlay;
+}
+
+function renderApp(){
+  const {seccion,gid,fecha,tab,res,avisos,admin,modal}=STATE;
+  const g=GRUPOS[gid];
+  const proximos=getProximos();
+
+  // Header
+  const logoH=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"36px",height:"36px",objectFit:"contain"}});
+  const title=h("div",{},[
+    h("div",{class:"bc",style:{fontSize:"1.15rem",letterSpacing:"3px",fontWeight:800,lineHeight:1}},["LIGA PIRIA PÁDEL"]),
+    h("div",{style:{fontSize:".6rem",color:muted,letterSpacing:"3px",fontFamily:"'Barlow Condensed',sans-serif"}},["MARZO–MAYO 2026"]),
+  ]);
+  const adminBadge=admin?h("span",{class:"bc",style:{background:"#7c3aed22",border:"1px solid #7c3aed",color:"#a78bfa",padding:"2px 8px",borderRadius:"10px",fontSize:".65rem"}},["🔑 ADMIN"]):null;
+  const salirBtn=h("button",{style:{background:"none",border:`1px solid ${border}`,color:muted,padding:".2rem .5rem",borderRadius:"6px",cursor:"pointer",fontSize:".68rem"},onclick:()=>setState({loggedIn:false,admin:false,loginStep:"choose",pin:""})},[" Salir"]);
+  const header=h("header",{style:{background:`${card}ee`,borderBottom:`1px solid ${border}`,padding:".8rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}},[
+    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[logoH,title]),
+    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[adminBadge,salirBtn].filter(Boolean)),
+  ]);
+
+  // Nav tabs
+  const SECS=[
+    {id:"inicio",label:"🏠 INICIO"},
+    {id:"proximos",label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},
+    {id:"grupos",label:"🎾 GRUPOS"},
+    {id:"avisos",label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`},
+  ];
+  const nav=h("div",{style:{background:card,borderBottom:`1px solid ${border}`,display:"flex",overflowX:"auto"}},
+    SECS.map(s=>h("button",{style:{background:"none",border:"none",padding:".9rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem",letterSpacing:"1px",color:seccion===s.id?"#dbeafe":muted,borderBottom:seccion===s.id?"3px solid #3b82f6":"3px solid transparent",whiteSpace:"nowrap"},onclick:()=>setState({seccion:s.id})},[s.label]))
+  );
+
+  // Content
+  let content;
+
+  if(seccion==="inicio"){
+    const logoB=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"120px",height:"120px",objectFit:"contain",display:"block",margin:"0 auto 1rem"}});
+    const stats=h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:".75rem",maxWidth:"500px",margin:"0 auto"}},
+      [["3","GRUPOS"],["24","PAREJAS"],["7","FECHAS"],["23 MAY","GRAN FINAL"]].map(([n,l])=>
+        h("div",{class:"card",style:{padding:"1rem",textAlign:"center"}},[
+          h("div",{class:"bc",style:{fontSize:"1.8rem",fontWeight:800,color:"#3b82f6"}},[n]),
+          h("div",{class:"bc",style:{color:muted,fontSize:".72rem",letterSpacing:"2px"}},[l]),
+        ])
+      )
+    );
+    const hero=h("div",{style:{textAlign:"center",padding:"2rem 1rem",marginBottom:"1.5rem"}},[
+      logoB,
+      h("div",{class:"bc",style:{fontSize:"2rem",fontWeight:800,letterSpacing:"4px",marginBottom:".3rem"}},["LIGA PIRIA PÁDEL"]),
+      h("div",{class:"bc",style:{color:muted,letterSpacing:"3px",fontSize:".8rem",marginBottom:"1.5rem"}},["TEMPORADA MARZO — MAYO 2026"]),
+      stats,
+    ]);
+
+    const avisosSection=avisos.length>0?h("div",{style:{marginBottom:"1.5rem"}},[
+      h("div",{class:"bc",style:{fontSize:"1rem",letterSpacing:"3px",color:"#a78bfa",marginBottom:".75rem"}},["📢 ÚLTIMOS AVISOS"]),
+      ...avisos.slice(0,2).map(a=>h("div",{class:"card",style:{marginBottom:".5rem",border:"1px solid #7c3aed33"}},[
+        h("div",{style:{fontSize:".65rem",color:muted,marginBottom:".3rem"}},[`📅 ${a.fecha}`]),
+        h("div",{style:{color:text,fontSize:".85rem"}},[a.texto]),
+      ])),
+    ]):null;
+
+    const proximosSection=proximos.length>0?h("div",{},[
+      h("div",{class:"bc",style:{fontSize:"1rem",letterSpacing:"3px",color:"#dbeafe",marginBottom:".75rem"}},["📅 PRÓXIMOS PARTIDOS"]),
+      h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:".75rem"}},
+        proximos.slice(0,4).map(p=>h("div",{class:"card",style:{border:`1px solid ${p.color}44`}},[
+          h("div",{class:"bc",style:{fontSize:".65rem",color:p.color,marginBottom:".4rem"}},[`${p.label} · FECHA ${p.fi}`]),
+          h("div",{style:{fontSize:".85rem",lineHeight:1.5,marginBottom:".5rem"}},[
+            h("strong",{},[p.p1])," ",h("span",{style:{color:p.color}},["vs"])," ",h("strong",{},[p.p2])
+          ]),
+          h("div",{style:{fontSize:".75rem",color:muted}},[`📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`]),
+        ]))
+      ),
+    ]):null;
+
+    content=h("div",{},[hero,avisosSection,proximosSection].filter(Boolean));
+  }
+
+  else if(seccion==="proximos"){
+    const lista=proximos;
+    const cards=lista.length===0
+      ?h("div",{style:{textAlign:"center",padding:"2rem",color:muted}},["No hay partidos agendados todavía."])
+      :h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:".9rem"}},
+        lista.map(p=>h("div",{class:"card",style:{border:`1px solid ${p.color}44`}},[
+          h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[
+            h("span",{class:"bc",style:{fontSize:".65rem",background:p.color+"22",color:p.color,padding:"2px 8px",borderRadius:"10px"}},[p.label]),
+            h("span",{class:"bc",style:{fontSize:".65rem",color:muted}},["FECHA "+p.fi]),
+          ]),
+          h("div",{style:{fontSize:".88rem",lineHeight:1.6,marginBottom:".6rem"}},[h("strong",{},[p.p1]),h("br"),h("span",{class:"bc",style:{color:p.color,fontSize:".7rem",letterSpacing:"3px"}},["VS"]),h("br"),h("strong",{},[p.p2])]),
+          h("div",{style:{paddingTop:".6rem",borderTop:`1px solid ${border}`,fontSize:".78rem",color:muted}},[`📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`]),
+        ]))
+      );
+    content=h("div",{},[
+      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[
+        h("div",{style:{width:"4px",height:"32px",background:"#3b82f6",borderRadius:"2px"}}),
+        h("div",{},[
+          h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["PRÓXIMOS PARTIDOS"]),
+          h("div",{style:{color:muted,fontSize:".75rem"}},["Todos los partidos agendados ordenados por fecha"]),
+        ]),
+      ]),
+      cards,
+    ]);
+  }
+
+  else if(seccion==="grupos"){
+    const gTabs=h("div",{style:{background:card,display:"flex",overflowX:"auto",marginBottom:"1.2rem",borderRadius:"10px"}},
+      Object.entries(GRUPOS).map(([id,gr])=>h("button",{style:{background:"none",border:"none",padding:".8rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem",letterSpacing:"1.5px",color:gid===id?gr.color:muted,borderBottom:gid===id?`3px solid ${gr.color}`:"3px solid transparent",whiteSpace:"nowrap"},onclick:()=>setState({gid:id,fecha:1,tab:"cruces"})},[(id==="G+7"?"🟡":id==="G1+11"?"🔵":"🟢")+" "+gr.label]))
+    );
+
+    // subtabs
+    const subTabs=h("div",{style:{display:"flex",borderBottom:`1px solid ${border}`,marginBottom:"1.5rem"}},[
+      h("button",{style:{background:"none",border:"none",padding:".75rem 1.2rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".9rem",letterSpacing:"2px",color:tab==="cruces"?g.color:muted,borderBottom:tab==="cruces"?`2px solid ${g.color}`:"2px solid transparent"},onclick:()=>setState({tab:"cruces"})},["📅 CRUCES"]),
+      h("button",{style:{background:"none",border:"none",padding:".75rem 1.2rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".9rem",letterSpacing:"2px",color:tab==="tabla"?g.color:muted,borderBottom:tab==="tabla"?`2px solid ${g.color}`:"2px solid transparent"},onclick:()=>setState({tab:"tabla"})},["🏆 TABLA"]),
+    ]);
+
+    let tabContent;
+    if(tab==="tabla"){
+      const rows=calcTabla(gid);
+      tabContent=h("div",{style:{overflowX:"auto"}},[
+        h("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:"360px"}},[
+          h("thead",{},[h("tr",{},["#","PAREJA","PJ","PG","PP","PTS"].map(hd=>h("th",{style:{padding:".5rem .6rem",textAlign:hd==="PAREJA"?"left":"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".72rem",letterSpacing:"2px",color:muted,borderBottom:`1px solid ${border}`}},[hd])))]),
+          h("tbody",{},rows.map(({p,PJ,PG,PP,PTS},i)=>h("tr",{style:{borderBottom:`1px solid ${border}22`,background:i===0?g.color+"22":i===1?g.color+"11":"transparent"}},[
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:i<2?g.color:muted,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"1.1rem"}},[i===0?"🥇":i===1?"🥈":String(i+1)]),
+            h("td",{style:{padding:".5rem .6rem",color:i<2?text:muted,fontSize:".82rem",fontWeight:i<2?"700":"400"}},[p+(i<2?" ✓":"")]),
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:muted,fontSize:".82rem"}},[String(PJ)]),
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:"#4ade80",fontSize:".82rem"}},[String(PG)]),
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:"#f87171",fontSize:".82rem"}},[String(PP)]),
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.1rem",fontWeight:700,color:g.color}},[String(PTS)]),
+          ]))),
+        ]),
+        h("div",{style:{marginTop:".75rem",fontSize:".7rem",color:muted,fontFamily:"'Barlow Condensed',sans-serif"}},["🏆 Los 2 primeros clasifican a la Gran Final"]),
+      ]);
+    } else {
+      const fBtns=h("div",{style:{display:"flex",gap:".4rem",flexWrap:"wrap",marginBottom:"1.2rem"}},
+        g.cruces.map((_,i)=>h("button",{style:{background:fecha===i+1?g.color:card,color:fecha===i+1?"white":muted,border:`1px solid ${fecha===i+1?g.color:border}`,padding:".3rem .8rem",borderRadius:"20px",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem"},onclick:()=>setState({fecha:i+1})},["F"+(i+1)]))
+      );
+      const cards=h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:".9rem"}},
+        g.cruces[fecha-1].map(([p1,p2],ci)=>{
+          const k=cid(gid,fecha,ci);
+          const d=res[k]||{};
+          const jugado=!!(d.resultado&&d.resultado.trim()&&d.ganador);
+          const agendado=!!d.fecha&&!jugado;
+          const card2=h("div",{style:{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:"12px",padding:"1rem",cursor:admin?"pointer":"default",transition:"transform .15s"}},[
+            h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[
+              h("span",{class:"bc",style:{fontSize:".72rem",letterSpacing:"2px",color:muted}},["FECHA "+fecha]),
+              h("span",{class:"bc",style:{fontSize:".62rem",background:jugado?g.color:agendado?g.color+"33":border,color:jugado?"white":agendado?g.color:muted,padding:"2px 8px",borderRadius:"10px"}},[jugado?"✓ JUGADO":agendado?"📅 AGENDADO":"SIN FECHA"]),
+            ]),
+            h("div",{style:{fontSize:".88rem",lineHeight:1.6}},[
+              h("div",{style:{fontWeight:600,color:d.ganador==="p1"?g.color:text}},[p1]),
+              h("div",{class:"bc",style:{color:g.color,fontSize:".7rem",letterSpacing:"3px",margin:"2px 0"}},["VS"]),
+              h("div",{style:{fontWeight:600,color:d.ganador==="p2"?g.color:text}},[p2]),
+            ]),
+            agendado?h("div",{style:{marginTop:".6rem",paddingTop:".6rem",borderTop:`1px solid ${border}`,fontSize:".78rem",color:muted}},[`📅 ${fmtFecha(d.fecha)} · 🕐 ${d.hora} · 🎾 ${(d.cancha||"").replace("Cancha ","C")}`]):null,
+            jugado?h("div",{class:"bc",style:{marginTop:".4rem",fontSize:".82rem",color:g.color}},[d.resultado]):null,
+            admin?h("div",{class:"bc",style:{marginTop:".5rem",fontSize:".68rem",color:muted}},["✏️ Tocá para editar"]):null,
+          ].filter(Boolean));
+          if(admin)card2.onclick=()=>setState({modal:{p1,p2,k,gid}});
+          if(admin){card2.onmouseenter=()=>card2.style.transform="translateY(-2px)";card2.onmouseleave=()=>card2.style.transform="translateY(0)";}
+          return card2;
+        })
+      );
+      tabContent=h("div",{},[fBtns,cards]);
+    }
+
+    const readNote=!admin?h("div",{style:{background:"#1a284088",border:`1px solid ${border}`,borderRadius:"10px",padding:".6rem 1rem",marginBottom:"1rem",fontSize:".78rem",color:muted}},["👁 Modo lectura — Solo Felipe puede cargar fechas y resultados."]):null;
+    content=h("div",{},[gTabs,h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[h("div",{style:{width:"4px",height:"32px",background:g.color,borderRadius:"2px"}}),h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},[g.label.toUpperCase()]),h("div",{style:{color:muted,fontSize:".75rem"}},["8 parejas · 7 fechas · Final 23 de Mayo"])])]),readNote,subTabs,tabContent].filter(Boolean));
+  }
+
+  else if(seccion==="avisos"){
+    let avisoContent=[];
+    if(admin){
+      const ta=h("textarea",{class:"inp",placeholder:"Escribí un aviso para los jugadores...",style:{minHeight:"80px",resize:"vertical",marginBottom:".75rem"}});
+      const pubBtn=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".7rem"},onclick:()=>{
+        if(!ta.value.trim())return;
+        const fecha=new Date().toLocaleDateString("es-UY");
+        saveAvisos([{texto:ta.value.trim(),fecha},...STATE.avisos]);
+        ta.value="";
+      }},["📢 PUBLICAR AVISO"]);
+      avisoContent.push(h("div",{class:"card",style:{border:"1px solid #7c3aed44",marginBottom:"1.2rem"}},[
+        h("label",{class:"lbl",style:{color:"#a78bfa",marginBottom:".5rem"}},["NUEVO AVISO"]),ta,pubBtn
+      ]));
+    }
+    if(avisos.length===0){
+      avisoContent.push(h("div",{style:{textAlign:"center",padding:"2rem",color:muted}},["No hay avisos publicados."]));
+    } else {
+      avisos.forEach((a,i)=>{
+        const borrar=h("button",{style:{background:"none",border:"none",color:"#f87171",cursor:"pointer",fontSize:".8rem"},onclick:()=>saveAvisos(avisos.filter((_,idx)=>idx!==i))},["🗑️"]);
+        const card3=h("div",{class:"card",style:{marginBottom:".75rem"}},[
+          h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".4rem"}},[
+            h("span",{class:"bc",style:{fontSize:".65rem",color:muted,letterSpacing:"1px"}},[`📅 ${a.fecha}`]),
+            admin?borrar:null,
+          ].filter(Boolean)),
+          h("div",{style:{color:text,fontSize:".88rem",lineHeight:1.6,whiteSpace:"pre-wrap"}},[a.texto]),
+        ]);
+        avisoContent.push(card3);
+      });
+    }
+    content=h("div",{},[
+      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[
+        h("div",{style:{width:"4px",height:"32px",background:"#a78bfa",borderRadius:"2px"}}),
+        h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["TABLÓN DE AVISOS"]),h("div",{style:{color:muted,fontSize:".75rem"}},["Comunicados y novedades de la liga"])]),
+      ]),
+      ...avisoContent,
+    ]);
+  }
+
+  const main=h("div",{style:{padding:"1.2rem",maxWidth:"1100px",margin:"0 auto"}},[content]);
+  const footer=h("div",{class:"bc",style:{textAlign:"center",padding:"1.5rem",color:muted,fontSize:".72rem",letterSpacing:"2px"}},["⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐"]);
+  const modalEl=renderModal();
+
+  const page=h("div",{style:{minHeight:"100vh"}},[header,nav,main,footer,modalEl].filter(Boolean));
+  return page;
+}
+
+function render(){
+  const app=document.getElementById("app");
+  app.innerHTML="";
+  if(!STATE.loggedIn){app.appendChild(renderLogin());}
+  else{app.appendChild(renderApp());}
+}
+
+// ── Init ──────────────────────────────────────────────
+async function init(){
+  // Escuchar Firebase en tiempo real
+  fbListen("resultados",val=>{try{STATE.res=JSON.parse(val);render();}catch{}});
+  fbListen("avisos",val=>{try{STATE.avisos=JSON.parse(val);render();}catch{}});
+
+  // Cargar datos iniciales
+  const [r,a]=await Promise.all([fbGet("resultados"),fbGet("avisos")]);
+  if(r)try{STATE.res=JSON.parse(r);}catch{}
+  if(a)try{STATE.avisos=JSON.parse(a);}catch{}
+
+  document.getElementById("loading").style.display="none";
+  document.getElementById("app").classList.remove("hidden");
+  render();
+}
+
+init();
 </script>
 
 </body>
