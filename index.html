@@ -9,6 +9,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+```
+const firebaseConfig = {
+  apiKey: "AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
+  authDomain: "liga-piriapadel.firebaseapp.com",
+  projectId: "liga-piriapadel",
+  storageBucket: "liga-piriapadel.firebasestorage.app",
+  messagingSenderId: "290389729651",
+  appId: "1:290389729651:web:716352d8ca667b8c5b6506"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.firebaseDB = db;
+window.firebaseDoc = doc;
+window.firebaseGetDoc = getDoc;
+window.firebaseSetDoc = setDoc;
+window.firebaseOnSnapshot = onSnapshot;
+window.firebaseReady = true;
+window.dispatchEvent(new Event("firebaseReady"));
+```
+
+  </script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#06090f;color:#dbeafe}
@@ -63,14 +91,7 @@ cruces: [
 
 const CANCHAS = [“Cancha 1”,“Cancha 2”,“Cancha 3”,“Cancha 4”];
 const PIN_KEY = “liga-piria-pin”;
-const DATA_KEY = “liga-piria-data”;
-const AVISOS_KEY = “liga-piria-avisos”;
 const LOGO = “https://i.ibb.co/QFtnYvcp/Whats-App-Image-2026-04-08-at-4-51-05-PM.jpg”;
-
-const storage = {
-get: (k) => { try { const v=localStorage.getItem(k); return v?{value:v}:null; } catch { return null; } },
-set: (k,v) => { try { localStorage.setItem(k,v); } catch {} },
-};
 
 const bg=”#06090f”, card=”#0c1220”, border=”#1a2840”, text=”#dbeafe”, muted=”#4a6fa5”;
 const inp = { background:bg, border:`1px solid ${border}`, borderRadius:“8px”, padding:“0.55rem 0.8rem”, color:text, fontSize:“0.9rem”, width:“100%”, boxSizing:“border-box”, outline:“none”, fontFamily:“inherit” };
@@ -78,6 +99,34 @@ const lbl = { display:“block”, color:muted, fontSize:“0.68rem”, fontFami
 const btn = (c) => ({ background:c||”#1d4ed8”, color:“white”, border:“none”, borderRadius:“8px”, padding:“0.65rem 1.2rem”, cursor:“pointer”, fontFamily:”‘Barlow Condensed’,sans-serif”, fontSize:“1rem”, letterSpacing:“1.5px” });
 
 function cid(g,f,i){ return `${g}_F${f}_${i}`; }
+
+// Firebase helpers
+async function fbGet(key) {
+try {
+const db = window.firebaseDB;
+const ref = window.firebaseDoc(db, “liga”, key);
+const snap = await window.firebaseGetDoc(ref);
+return snap.exists() ? snap.data().value : null;
+} catch { return null; }
+}
+
+async function fbSet(key, value) {
+try {
+const db = window.firebaseDB;
+const ref = window.firebaseDoc(db, “liga”, key);
+await window.firebaseSetDoc(ref, { value });
+} catch {}
+}
+
+function fbListen(key, callback) {
+try {
+const db = window.firebaseDB;
+const ref = window.firebaseDoc(db, “liga”, key);
+return window.firebaseOnSnapshot(ref, (snap) => {
+if (snap.exists()) callback(snap.data().value);
+});
+} catch { return () => {}; }
+}
 
 function calcTabla(gid, res) {
 const tabla = {};
@@ -103,19 +152,11 @@ ronda.forEach(([p1,p2],ci) => {
 const k = cid(gid,fi+1,ci);
 const d = res[k]||{};
 const jugado = !!(d.resultado && d.resultado.trim() && d.ganador);
-if(d.fecha && !jugado) {
-lista.push({gid, color:g.color, label:g.label, fecha:d.fecha, hora:d.hora, cancha:d.cancha, p1, p2, fi:fi+1});
-}
+if(d.fecha && !jugado) lista.push({gid,color:g.color,label:g.label,fecha:d.fecha,hora:d.hora,cancha:d.cancha,p1,p2,fi:fi+1});
 });
 });
 });
-return lista.sort((a,b) => {
-if(a.fecha < b.fecha) return -1;
-if(a.fecha > b.fecha) return 1;
-if(a.hora < b.hora) return -1;
-if(a.hora > b.hora) return 1;
-return 0;
-});
+return lista.sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.hora<b.hora?-1:1);
 }
 
 function Modal({ p1, p2, k, data, onSave, onClose, isAdmin, color }) {
@@ -140,53 +181,45 @@ return (
 </div>
 <button onClick={onClose} style={{background:“none”,border:“none”,color:muted,cursor:“pointer”,fontSize:“1.4rem”}}>✕</button>
 </div>
-
-```
-    <div style={{marginBottom:"0.75rem"}}>
-      <label style={lbl}>FECHA</label>
-      <input type="date" value={fecha} onChange={e=>setFecha(e.target.value)} style={inp}/>
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.75rem",marginBottom:"1rem"}}>
-      <div><label style={lbl}>HORA</label><input type="time" value={hora} onChange={e=>setHora(e.target.value)} style={inp}/></div>
-      <div><label style={lbl}>CANCHA</label>
-        <select value={cancha} onChange={e=>setCancha(e.target.value)} style={inp}>
-          {CANCHAS.map(c=><option key={c}>{c}</option>)}
-        </select>
-      </div>
-    </div>
-
-    {isAdmin && (
-      <div style={{borderTop:`1px solid ${border}`,paddingTop:"1rem",marginBottom:"1rem"}}>
-        <div style={{color,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",letterSpacing:"2px",marginBottom:"0.75rem"}}>RESULTADO (opcional)</div>
-        <div style={{marginBottom:"0.75rem"}}>
-          <label style={lbl}>SETS (ej: 6-3 / 4-6 / 7-5)</label>
-          <input type="text" value={resultado} onChange={e=>setResultado(e.target.value)} placeholder="Dejá vacío si aún no se jugó" style={inp}/>
-        </div>
-        <label style={lbl}>GANADOR</label>
-        <div style={{display:"flex",gap:"0.5rem",marginBottom:"0.75rem"}}>
-          {[["p1",p1],["p2",p2]].map(([g,nombre])=>(
-            <button key={g} onClick={()=>setGanador(ganador===g?"":g)} style={{...btn(ganador===g?color:"#1a2840"),flex:1,fontSize:"0.78rem",padding:"0.5rem",border:`1px solid ${ganador===g?color:border}`}}>
-              {nombre.split("/")[0].trim()}
-            </button>
-          ))}
-        </div>
-        {(data?.resultado||data?.ganador) && (
-          <button onClick={borrar} style={{...btn("#991b1b"),width:"100%",fontSize:"0.78rem",padding:"0.5rem"}}>
-            🗑️ BORRAR RESULTADO
-          </button>
-        )}
-      </div>
-    )}
-    {!isAdmin && <p style={{color:muted,fontSize:"0.72rem",margin:"0.5rem 0 1rem"}}>🔒 Solo Felipe puede cargar resultados.</p>}
-
-    <div style={{display:"flex",gap:"0.75rem"}}>
-      <button onClick={save} style={{...btn(color),flex:1}}>GUARDAR</button>
-      <button onClick={onClose} style={{...btn("#1a2840"),padding:"0.65rem 1rem"}}>CANCELAR</button>
-    </div>
-  </div>
+<div style={{marginBottom:“0.75rem”}}>
+<label style={lbl}>FECHA</label>
+<input type=“date” value={fecha} onChange={e=>setFecha(e.target.value)} style={inp}/>
 </div>
-```
-
+<div style={{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“0.75rem”,marginBottom:“1rem”}}>
+<div><label style={lbl}>HORA</label><input type=“time” value={hora} onChange={e=>setHora(e.target.value)} style={inp}/></div>
+<div><label style={lbl}>CANCHA</label>
+<select value={cancha} onChange={e=>setCancha(e.target.value)} style={inp}>
+{CANCHAS.map(c=><option key={c}>{c}</option>)}
+</select>
+</div>
+</div>
+{isAdmin && (
+<div style={{borderTop:`1px solid ${border}`,paddingTop:“1rem”,marginBottom:“1rem”}}>
+<div style={{color,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.7rem”,letterSpacing:“2px”,marginBottom:“0.75rem”}}>RESULTADO (opcional)</div>
+<div style={{marginBottom:“0.75rem”}}>
+<label style={lbl}>SETS (ej: 6-3 / 4-6 / 7-5)</label>
+<input type=“text” value={resultado} onChange={e=>setResultado(e.target.value)} placeholder=“Dejá vacío si aún no se jugó” style={inp}/>
+</div>
+<label style={lbl}>GANADOR</label>
+<div style={{display:“flex”,gap:“0.5rem”,marginBottom:“0.75rem”}}>
+{[[“p1”,p1],[“p2”,p2]].map(([g,nombre])=>(
+<button key={g} onClick={()=>setGanador(ganador===g?””:g)} style={{…btn(ganador===g?color:”#1a2840”),flex:1,fontSize:“0.78rem”,padding:“0.5rem”,border:`1px solid ${ganador===g?color:border}`}}>
+{nombre.split(”/”)[0].trim()}
+</button>
+))}
+</div>
+{(data?.resultado||data?.ganador) && (
+<button onClick={borrar} style={{…btn(”#991b1b”),width:“100%”,fontSize:“0.78rem”,padding:“0.5rem”}}>🗑️ BORRAR RESULTADO</button>
+)}
+</div>
+)}
+{!isAdmin && <p style={{color:muted,fontSize:“0.72rem”,margin:“0.5rem 0 1rem”}}>🔒 Solo Felipe puede cargar resultados.</p>}
+<div style={{display:“flex”,gap:“0.75rem”}}>
+<button onClick={save} style={{...btn(color),flex:1}}>GUARDAR</button>
+<button onClick={onClose} style={{…btn(”#1a2840”),padding:“0.65rem 1rem”}}>CANCELAR</button>
+</div>
+</div>
+</div>
 );
 }
 
@@ -221,11 +254,7 @@ return (
 
 function Proximos({ res }) {
 const lista = getProximos(res);
-if(lista.length===0) return (
-<div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>
-No hay partidos agendados todavía.
-</div>
-);
+if(lista.length===0) return <div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>No hay partidos agendados todavía.</div>;
 return (
 <div style={{display:“grid”,gridTemplateColumns:“repeat(auto-fill,minmax(280px,1fr))”,gap:“0.9rem”}}>
 {lista.map((p,i)=>(
@@ -258,7 +287,7 @@ const [editTxt, setEditTxt] = React.useState(””);
 const agregar = () => {
 if(!nuevo.trim()) return;
 const fecha = new Date().toLocaleDateString(“es-UY”);
-onSave([{texto:nuevo.trim(), fecha}, …avisos]);
+onSave([{texto:nuevo.trim(),fecha},…avisos]);
 setNuevo(””);
 };
 const borrar = (i) => onSave(avisos.filter((_,idx)=>idx!==i));
@@ -274,10 +303,9 @@ style={{…inp,minHeight:“80px”,resize:“vertical”,marginBottom:“0.75re
 <button onClick={agregar} style={{…btn(”#7c3aed”),width:“100%”,padding:“0.7rem”}}>📢 PUBLICAR AVISO</button>
 </div>
 )}
-{avisos.length===0 ? (
-<div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>No hay avisos publicados.</div>
-) : (
-<div style={{display:“flex”,flexDirection:“column”,gap:“0.75rem”}}>
+{avisos.length===0
+? <div style={{textAlign:“center”,padding:“2rem”,color:muted,fontSize:“0.85rem”}}>No hay avisos publicados.</div>
+: <div style={{display:“flex”,flexDirection:“column”,gap:“0.75rem”}}>
 {avisos.map((a,i)=>(
 <div key={i} style={{background:card,border:`1px solid ${border}`,borderRadius:“12px”,padding:“1rem”}}>
 <div style={{display:“flex”,justifyContent:“space-between”,alignItems:“flex-start”,marginBottom:“0.4rem”}}>
@@ -289,21 +317,20 @@ style={{…inp,minHeight:“80px”,resize:“vertical”,marginBottom:“0.75re
 </div>
 )}
 </div>
-{editIdx===i ? (
-<div>
+{editIdx===i
+? <div>
 <textarea value={editTxt} onChange={e=>setEditTxt(e.target.value)} style={{…inp,minHeight:“60px”,resize:“vertical”,marginBottom:“0.5rem”}}/>
 <div style={{display:“flex”,gap:“0.5rem”}}>
 <button onClick={()=>guardarEdit(i)} style={{…btn(”#7c3aed”),flex:1,padding:“0.4rem”,fontSize:“0.8rem”}}>GUARDAR</button>
 <button onClick={()=>setEditIdx(null)} style={{…btn(”#1a2840”),padding:“0.4rem 0.8rem”,fontSize:“0.8rem”}}>CANCELAR</button>
 </div>
 </div>
-) : (
-<div style={{color:text,fontSize:“0.88rem”,lineHeight:1.6,whiteSpace:“pre-wrap”}}>{a.texto}</div>
-)}
+: <div style={{color:text,fontSize:“0.88rem”,lineHeight:1.6,whiteSpace:“pre-wrap”}}>{a.texto}</div>
+}
 </div>
 ))}
 </div>
-)}
+}
 </div>
 );
 }
@@ -323,59 +350,54 @@ return (
 </button>
 ))}
 </div>
-
-```
-  {tab==="tabla" && <Tabla gid={gid} res={res}/>}
-
-  {tab==="cruces" && <>
-    <div style={{display:"flex",gap:"0.4rem",flexWrap:"wrap",marginBottom:"1.2rem"}}>
-      {g.cruces.map((_,i)=>(
-        <button key={i} onClick={()=>setFecha(i+1)} style={{background:fecha===i+1?g.color:card,color:fecha===i+1?"white":muted,border:`1px solid ${fecha===i+1?g.color:border}`,padding:"0.3rem 0.8rem",borderRadius:"20px",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.82rem"}}>
-          F{i+1}
-        </button>
-      ))}
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:"0.9rem"}}>
-      {g.cruces[fecha-1].map(([p1,p2],ci)=>{
-        const k = cid(gid,fecha,ci);
-        const d = res[k]||{};
-        const jugado = !!(d.resultado && d.resultado.trim() && d.ganador);
-        const agendado = !!d.fecha && !jugado;
-        return (
-          <div key={k} onClick={()=>isAdmin&&setModal({p1,p2,k,d})}
-            style={{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:"12px",padding:"1rem",cursor:isAdmin?"pointer":"default",transition:"transform 0.15s"}}
-            onMouseEnter={e=>{if(isAdmin)e.currentTarget.style.transform="translateY(-2px)";}}
-            onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}
-          >
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"0.6rem"}}>
-              <span style={{fontSize:"0.72rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"2px",color:muted}}>FECHA {fecha}</span>
-              <span style={{fontSize:"0.62rem",fontFamily:"'Barlow Condensed',sans-serif",background:jugado?g.color:agendado?g.color+"33":border,color:jugado?"white":agendado?g.color:muted,padding:"2px 8px",borderRadius:"10px"}}>
-                {jugado?"✓ JUGADO":agendado?"📅 AGENDADO":"SIN FECHA"}
-              </span>
-            </div>
-            <div style={{fontSize:"0.88rem",color:text,lineHeight:1.6}}>
-              <div style={{fontWeight:600,color:d.ganador==="p1"?g.color:text}}>{p1}</div>
-              <div style={{color:g.color,fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.7rem",letterSpacing:"3px",margin:"2px 0"}}>VS</div>
-              <div style={{fontWeight:600,color:d.ganador==="p2"?g.color:text}}>{p2}</div>
-            </div>
-            {agendado&&(
-              <div style={{marginTop:"0.6rem",paddingTop:"0.6rem",borderTop:`1px solid ${border}`,fontSize:"0.78rem",color:muted,display:"flex",gap:"0.75rem",flexWrap:"wrap"}}>
-                <span>📅 {d.fecha?.split("-").reverse().join("/")}</span>
-                <span>🕐 {d.hora}</span>
-                <span>🎾 {d.cancha?.replace("Cancha ","C")}</span>
-              </div>
-            )}
-            {jugado&&<div style={{marginTop:"0.4rem",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"0.82rem",color:g.color}}>{d.resultado}</div>}
-            {isAdmin&&<div style={{marginTop:"0.5rem",fontSize:"0.68rem",color:muted,fontFamily:"'Barlow Condensed',sans-serif"}}>✏️ Tocá para editar</div>}
-          </div>
-        );
-      })}
-    </div>
-  </>}
-  {modal&&<Modal p1={modal.p1} p2={modal.p2} k={modal.k} data={res[modal.k]||{}} onSave={onSave} onClose={()=>setModal(null)} isAdmin={isAdmin} color={g.color}/>}
+{tab===“tabla” && <Tabla gid={gid} res={res}/>}
+{tab===“cruces” && <>
+<div style={{display:“flex”,gap:“0.4rem”,flexWrap:“wrap”,marginBottom:“1.2rem”}}>
+{g.cruces.map((_,i)=>(
+<button key={i} onClick={()=>setFecha(i+1)} style={{background:fecha===i+1?g.color:card,color:fecha===i+1?“white”:muted,border:`1px solid ${fecha===i+1?g.color:border}`,padding:“0.3rem 0.8rem”,borderRadius:“20px”,cursor:“pointer”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.82rem”}}>
+F{i+1}
+</button>
+))}
 </div>
-```
-
+<div style={{display:“grid”,gridTemplateColumns:“repeat(auto-fill,minmax(260px,1fr))”,gap:“0.9rem”}}>
+{g.cruces[fecha-1].map(([p1,p2],ci)=>{
+const k = cid(gid,fecha,ci);
+const d = res[k]||{};
+const jugado = !!(d.resultado && d.resultado.trim() && d.ganador);
+const agendado = !!d.fecha && !jugado;
+return (
+<div key={k} onClick={()=>isAdmin&&setModal({p1,p2,k,d})}
+style={{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:“12px”,padding:“1rem”,cursor:isAdmin?“pointer”:“default”,transition:“transform 0.15s”}}
+onMouseEnter={e=>{if(isAdmin)e.currentTarget.style.transform=“translateY(-2px)”;}}
+onMouseLeave={e=>e.currentTarget.style.transform=“translateY(0)”}
+>
+<div style={{display:“flex”,justifyContent:“space-between”,marginBottom:“0.6rem”}}>
+<span style={{fontSize:“0.72rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,letterSpacing:“2px”,color:muted}}>FECHA {fecha}</span>
+<span style={{fontSize:“0.62rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,background:jugado?g.color:agendado?g.color+“33”:border,color:jugado?“white”:agendado?g.color:muted,padding:“2px 8px”,borderRadius:“10px”}}>
+{jugado?“✓ JUGADO”:agendado?“📅 AGENDADO”:“SIN FECHA”}
+</span>
+</div>
+<div style={{fontSize:“0.88rem”,color:text,lineHeight:1.6}}>
+<div style={{fontWeight:600,color:d.ganador===“p1”?g.color:text}}>{p1}</div>
+<div style={{color:g.color,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.7rem”,letterSpacing:“3px”,margin:“2px 0”}}>VS</div>
+<div style={{fontWeight:600,color:d.ganador===“p2”?g.color:text}}>{p2}</div>
+</div>
+{agendado&&(
+<div style={{marginTop:“0.6rem”,paddingTop:“0.6rem”,borderTop:`1px solid ${border}`,fontSize:“0.78rem”,color:muted,display:“flex”,gap:“0.75rem”,flexWrap:“wrap”}}>
+<span>📅 {d.fecha?.split(”-”).reverse().join(”/”)}</span>
+<span>🕐 {d.hora}</span>
+<span>🎾 {d.cancha?.replace(“Cancha “,“C”)}</span>
+</div>
+)}
+{jugado&&<div style={{marginTop:“0.4rem”,fontFamily:”‘Barlow Condensed’,sans-serif”,fontSize:“0.82rem”,color:g.color}}>{d.resultado}</div>}
+{isAdmin&&<div style={{marginTop:“0.5rem”,fontSize:“0.68rem”,color:muted,fontFamily:”‘Barlow Condensed’,sans-serif”}}>✏️ Tocá para editar</div>}
+</div>
+);
+})}
+</div>
+</>}
+{modal&&<Modal p1={modal.p1} p2={modal.p2} k={modal.k} data={res[modal.k]||{}} onSave={onSave} onClose={()=>setModal(null)} isAdmin={isAdmin} color={g.color}/>}
+</div>
 );
 }
 
@@ -383,19 +405,19 @@ function Login({ onLogin }) {
 const [step, setStep] = React.useState(“choose”);
 const [pin, setPin] = React.useState(””);
 const [pin2, setPin2] = React.useState(””);
-const [stored, setStored] = React.useState(null);
 const [err, setErr] = React.useState(””);
 
-const goAdmin = () => {
-const r = storage.get(PIN_KEY);
-if(r){ setStored(r.value); setStep(“enter”); } else setStep(“setup”);
+const goAdmin = async () => {
+const stored = localStorage.getItem(PIN_KEY);
+if(stored) setStep(“enter”); else setStep(“setup”);
 };
 const setup = () => {
 if(pin.length<4){setErr(“Mínimo 4 caracteres”);return;}
 if(pin!==pin2){setErr(“No coinciden”);return;}
-storage.set(PIN_KEY,pin); onLogin(true);
+localStorage.setItem(PIN_KEY,pin); onLogin(true);
 };
 const enter = () => {
+const stored = localStorage.getItem(PIN_KEY);
 if(pin===stored) onLogin(true);
 else { setErr(“Contraseña incorrecta”); setPin(””); }
 };
@@ -442,16 +464,39 @@ const [res, setRes] = React.useState({});
 const [avisos, setAvisos] = React.useState([]);
 const [seccion, setSeccion] = React.useState(“inicio”);
 const [gid, setGid] = React.useState(“G+7”);
+const [fbReady, setFbReady] = React.useState(window.firebaseReady||false);
 
 React.useEffect(()=>{
-const r = storage.get(DATA_KEY);
-if(r) try { setRes(JSON.parse(r.value)); } catch {}
-const a = storage.get(AVISOS_KEY);
-if(a) try { setAvisos(JSON.parse(a.value)); } catch {}
+if(!fbReady) {
+window.addEventListener(“firebaseReady”, ()=>setFbReady(true));
+}
 },[]);
 
-const save = (k,d) => { const n={…res,[k]:d}; setRes(n); storage.set(DATA_KEY,JSON.stringify(n)); };
-const saveAvisos = (a) => { setAvisos(a); storage.set(AVISOS_KEY,JSON.stringify(a)); };
+React.useEffect(()=>{
+if(!fbReady) return;
+// Escuchar cambios en tiempo real
+const unsubRes = fbListen(“resultados”, (val)=>{
+try { setRes(JSON.parse(val)); } catch {}
+});
+const unsubAvi = fbListen(“avisos”, (val)=>{
+try { setAvisos(JSON.parse(val)); } catch {}
+});
+// Cargar datos iniciales
+fbGet(“resultados”).then(v=>{ if(v) try{setRes(JSON.parse(v));}catch{} });
+fbGet(“avisos”).then(v=>{ if(v) try{setAvisos(JSON.parse(v));}catch{} });
+return ()=>{ unsubRes(); unsubAvi(); };
+},[fbReady]);
+
+const save = async(k,d)=>{
+const n={…res,[k]:d};
+setRes(n);
+await fbSet(“resultados”, JSON.stringify(n));
+};
+
+const saveAvisos = async(a)=>{
+setAvisos(a);
+await fbSet(“avisos”, JSON.stringify(a));
+};
 
 if(!loggedIn) return <Login onLogin={(a)=>{setAdmin(a);setLoggedIn(true);}}/>;
 
@@ -459,10 +504,10 @@ const proximos = getProximos(res);
 const g = GRUPOS[gid];
 
 const SECCIONES = [
-{id:“inicio”, label:“🏠 INICIO”},
-{id:“proximos”, label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},
-{id:“grupos”, label:“🎾 GRUPOS”},
-{id:“avisos”, label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`},
+{id:“inicio”,label:“🏠 INICIO”},
+{id:“proximos”,label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},
+{id:“grupos”,label:“🎾 GRUPOS”},
+{id:“avisos”,label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`},
 ];
 
 return (
@@ -491,7 +536,6 @@ return (
   </div>
 
   <div style={{padding:"1.2rem",maxWidth:"1100px",margin:"0 auto"}}>
-
     {seccion==="inicio"&&(
       <div>
         <div style={{textAlign:"center",padding:"2rem 1rem",marginBottom:"1.5rem"}}>
@@ -583,7 +627,6 @@ return (
         <Avisos avisos={avisos} isAdmin={admin} onSave={saveAvisos}/>
       </div>
     )}
-
   </div>
   <div style={{textAlign:"center",padding:"1.5rem",color:muted,fontSize:"0.72rem",letterSpacing:"2px",fontFamily:"'Barlow Condensed',sans-serif"}}>⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐</div>
 </div>
