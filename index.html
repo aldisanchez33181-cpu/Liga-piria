@@ -9,31 +9,31 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
+      authDomain: "liga-piriapadel.firebaseapp.com",
+      projectId: "liga-piriapadel",
+      storageBucket: "liga-piriapadel.firebasestorage.app",
+      messagingSenderId: "290389729651",
+      appId: "1:290389729651:web:716352d8ca667b8c5b6506"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
 ```
-const firebaseConfig = {
-  apiKey: "AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
-  authDomain: "liga-piriapadel.firebaseapp.com",
-  projectId: "liga-piriapadel",
-  storageBucket: "liga-piriapadel.firebasestorage.app",
-  messagingSenderId: "290389729651",
-  appId: "1:290389729651:web:716352d8ca667b8c5b6506"
+window.fbSet = async (key, value) => {
+  try { await db.collection("liga").doc(key).set({ value }); } catch(e) { console.error(e); }
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.firebaseDB = db;
-window.firebaseDoc = doc;
-window.firebaseGetDoc = getDoc;
-window.firebaseSetDoc = setDoc;
-window.firebaseOnSnapshot = onSnapshot;
-window.firebaseReady = true;
-window.dispatchEvent(new Event("firebaseReady"));
+window.fbGet = async (key) => {
+  try { const s = await db.collection("liga").doc(key).get(); return s.exists ? s.data().value : null; } catch { return null; }
+};
+window.fbListen = (key, cb) => {
+  try { return db.collection("liga").doc(key).onSnapshot(s => { if(s.exists) cb(s.data().value); }); } catch { return ()=>{}; }
+};
 ```
 
   </script>
@@ -101,32 +101,9 @@ const btn = (c) => ({ background:c||”#1d4ed8”, color:“white”, border:“
 function cid(g,f,i){ return `${g}_F${f}_${i}`; }
 
 // Firebase helpers
-async function fbGet(key) {
-try {
-const db = window.firebaseDB;
-const ref = window.firebaseDoc(db, “liga”, key);
-const snap = await window.firebaseGetDoc(ref);
-return snap.exists() ? snap.data().value : null;
-} catch { return null; }
-}
-
-async function fbSet(key, value) {
-try {
-const db = window.firebaseDB;
-const ref = window.firebaseDoc(db, “liga”, key);
-await window.firebaseSetDoc(ref, { value });
-} catch {}
-}
-
-function fbListen(key, callback) {
-try {
-const db = window.firebaseDB;
-const ref = window.firebaseDoc(db, “liga”, key);
-return window.firebaseOnSnapshot(ref, (snap) => {
-if (snap.exists()) callback(snap.data().value);
-});
-} catch { return () => {}; }
-}
+async function fbGet(key) { return window.fbGet(key); }
+async function fbSet(key, value) { return window.fbSet(key, value); }
+function fbListen(key, callback) { return window.fbListen(key, callback); }
 
 function calcTabla(gid, res) {
 const tabla = {};
@@ -464,16 +441,9 @@ const [res, setRes] = React.useState({});
 const [avisos, setAvisos] = React.useState([]);
 const [seccion, setSeccion] = React.useState(“inicio”);
 const [gid, setGid] = React.useState(“G+7”);
-const [fbReady, setFbReady] = React.useState(window.firebaseReady||false);
+const [fbReady, setFbReady] = React.useState(true);
 
 React.useEffect(()=>{
-if(!fbReady) {
-window.addEventListener(“firebaseReady”, ()=>setFbReady(true));
-}
-},[]);
-
-React.useEffect(()=>{
-if(!fbReady) return;
 // Escuchar cambios en tiempo real
 const unsubRes = fbListen(“resultados”, (val)=>{
 try { setRes(JSON.parse(val)); } catch {}
@@ -485,7 +455,7 @@ try { setAvisos(JSON.parse(val)); } catch {}
 fbGet(“resultados”).then(v=>{ if(v) try{setRes(JSON.parse(v));}catch{} });
 fbGet(“avisos”).then(v=>{ if(v) try{setAvisos(JSON.parse(v));}catch{} });
 return ()=>{ unsubRes(); unsubAvi(); };
-},[fbReady]);
+},[]);
 
 const save = async(k,d)=>{
 const n={…res,[k]:d};
