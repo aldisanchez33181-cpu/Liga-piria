@@ -29,7 +29,6 @@
 <div id="app" class="hidden"></div>
 
 <script>
-// ── Firebase Init ──────────────────────────────────────
 firebase.initializeApp({
   apiKey:"AIzaSyDxiRB-VHoGCa8a5ffjbeDXWxoajCvhT8k",
   authDomain:"liga-piriapadel.firebaseapp.com",
@@ -44,11 +43,10 @@ async function fbGet(key){try{const s=await db.collection("liga").doc(key).get()
 async function fbSet(key,val){try{await db.collection("liga").doc(key).set({value:val});}catch(e){console.error(e);}}
 function fbListen(key,cb){try{return db.collection("liga").doc(key).onSnapshot(s=>{if(s.exists)cb(s.data().value);});}catch{return()=>{};}}
 
-// ── Data ──────────────────────────────────────────────
-const LOGO = "https://i.ibb.co/QFtnYvcp/Whats-App-Image-2026-04-08-at-4-51-05-PM.jpg";
-const PIN_KEY = "liga-piria-pin";
-const CANCHAS = ["Cancha 1","Cancha 2","Cancha 3","Cancha 4"];
-const GRUPOS = {
+const LOGO="https://i.ibb.co/QFtnYvcp/Whats-App-Image-2026-04-08-at-4-51-05-PM.jpg";
+const PIN_KEY="liga-piria-pin";
+const CANCHAS=["Cancha 1","Cancha 2","Cancha 3","Cancha 4"];
+const GRUPOS={
   "G+7":{label:"Liga Suma 7",color:"#f59e0b",cruces:[
     [["Rodrigo Larrosa / Agustín Núñez","Sebastián Morales / Santiago Mónaco"],["Martín Dangelo / Iván Tomatis","Ignacio Zurdo / Damián Cotto"],["Bruno Muñoz / Juan Goicoechea","Mauro Frattini / Felipe Muñoz"],["Joaquín Domínguez / Francisco Larre","Laureano Fregueiro / Alberto Gasalla"]],
     [["Rodrigo Larrosa / Agustín Núñez","Martín Dangelo / Iván Tomatis"],["Sebastián Morales / Santiago Mónaco","Ignacio Zurdo / Damián Cotto"],["Bruno Muñoz / Juan Goicoechea","Joaquín Domínguez / Francisco Larre"],["Mauro Frattini / Felipe Muñoz","Laureano Fregueiro / Alberto Gasalla"]],
@@ -78,41 +76,25 @@ const GRUPOS = {
   ]},
 };
 
-// ── State ─────────────────────────────────────────────
-let STATE = {
-  loggedIn: false,
-  admin: false,
-  seccion: "inicio",
-  gid: "G+7",
-  fecha: 1,
-  tab: "cruces",
-  res: {},
-  avisos: [],
-  modal: null,
-  loginStep: "choose",
-  pin: "",
-  pin2: "",
-  loginErr: "",
+let STATE={
+  loggedIn:false,admin:false,seccion:"inicio",gid:"G+7",fecha:1,tab:"cruces",
+  res:{},avisos:[],modal:null,loginStep:"choose",pin:"",pin2:"",loginErr:"",
 };
 
-function setState(patch){ Object.assign(STATE, patch); render(); }
+function setState(patch){Object.assign(STATE,patch);render();}
 
-// ── Helpers ───────────────────────────────────────────
 const bg="#06090f",card="#0c1220",border="#1a2840",text="#dbeafe",muted="#4a6fa5";
-function cid(g,f,i){return `${g}_F${f}_${i}`;}
+function cid(g,f,i){return`${g}_F${f}_${i}`;}
 function fmtFecha(f){return f?f.split("-").reverse().join("/"):"";}
 
 function calcSets(resultado){
-  // El resultado siempre se carga con los games del GANADOR primero
-  // ej: "6-3 / 4-6 / 6-4" → ganador ganó sets 1 y 3, perdedor ganó set 2
   if(!resultado||!resultado.trim())return{setsGanador:0,setsPerdedor:0};
   let setsGanador=0,setsPerdedor=0;
-  const sets=resultado.split("/").map(s=>s.trim());
-  sets.forEach(s=>{
-    const partes=s.split("-").map(x=>parseInt(x.trim()));
-    if(partes.length===2&&!isNaN(partes[0])&&!isNaN(partes[1])){
-      if(partes[0]>partes[1])setsGanador++;
-      else if(partes[1]>partes[0])setsPerdedor++;
+  resultado.split("/").map(s=>s.trim()).forEach(s=>{
+    const p=s.split("-").map(x=>parseInt(x.trim()));
+    if(p.length===2&&!isNaN(p[0])&&!isNaN(p[1])){
+      if(p[0]>p[1])setsGanador++;
+      else if(p[1]>p[0])setsPerdedor++;
     }
   });
   return{setsGanador,setsPerdedor};
@@ -120,26 +102,32 @@ function calcSets(resultado){
 
 function calcTabla(gid){
   const t={};
+  const total=GRUPOS[gid].cruces.length;
   GRUPOS[gid].cruces[0].forEach(([p1,p2])=>{t[p1]={PJ:0,PG:0,PP:0,PTS:0};t[p2]={PJ:0,PG:0,PP:0,PTS:0};});
   GRUPOS[gid].cruces.forEach((ronda,fi)=>{
     ronda.forEach(([p1,p2],ci)=>{
       const r=STATE.res[cid(gid,fi+1,ci)];
       if(r&&r.resultado&&r.resultado.trim()&&r.ganador){
         t[p1].PJ++;t[p2].PJ++;
-        const {setsGanador,setsPerdedor}=calcSets(r.resultado);
-        if(r.ganador==="p1"){
-          t[p1].PG++;t[p2].PP++;
-          t[p1].PTS+=setsGanador;
-          t[p2].PTS+=setsPerdedor;
-        } else {
-          t[p2].PG++;t[p1].PP++;
-          t[p2].PTS+=setsGanador;
-          t[p1].PTS+=setsPerdedor;
-        }
+        const{setsGanador,setsPerdedor}=calcSets(r.resultado);
+        if(r.ganador==="p1"){t[p1].PG++;t[p2].PP++;t[p1].PTS+=setsGanador;t[p2].PTS+=setsPerdedor;}
+        else{t[p2].PG++;t[p1].PP++;t[p2].PTS+=setsGanador;t[p1].PTS+=setsPerdedor;}
       }
     });
   });
-  return Object.entries(t).map(([p,s])=>({p,...s})).sort((a,b)=>b.PTS-a.PTS||b.PG-a.PG);
+  return Object.entries(t).map(([p,s])=>({p,...s,PR:total-s.PJ})).sort((a,b)=>b.PTS-a.PTS||b.PG-a.PG);
+}
+
+function diasRestantes(fechaStr){
+  if(!fechaStr)return null;
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const partido=new Date(fechaStr+"T00:00:00");
+  const diff=Math.round((partido-hoy)/(1000*60*60*24));
+  if(diff===0)return"¡HOY!";
+  if(diff===1)return"Mañana";
+  if(diff===-1)return"Ayer";
+  if(diff<0)return null;
+  return`En ${diff} días`;
 }
 
 function getProximos(){
@@ -168,7 +156,6 @@ async function saveAvisos(a){
   await fbSet("avisos",JSON.stringify(a));
 }
 
-// ── HTML builders ─────────────────────────────────────
 function h(tag,attrs,children){
   const el=document.createElement(tag);
   Object.entries(attrs||{}).forEach(([k,v])=>{
@@ -185,91 +172,75 @@ function h(tag,attrs,children){
 }
 
 function renderLogin(){
-  const {loginStep,pin,pin2,loginErr}=STATE;
+  const{loginStep,pin,pin2,loginErr}=STATE;
   const logo=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"150px",height:"150px",objectFit:"contain",display:"block",margin:"0 auto .5rem"}});
-  const sub=h("div",{style:{color:muted,letterSpacing:"4px",fontSize:".72rem",marginBottom:"2rem",fontFamily:"'Barlow Condensed',sans-serif"}},[" MARZO — MAYO 2026"]);
-
+  const sub=h("div",{style:{color:muted,letterSpacing:"4px",fontSize:".72rem",marginBottom:"2rem",fontFamily:"'Barlow Condensed',sans-serif"}},["MARZO — MAYO 2026"]);
   let inner;
   if(loginStep==="choose"){
-    const b1=h("button",{class:"btn",style:{background:"#1d4ed8",width:"100%",padding:".85rem",marginBottom:".75rem",letterSpacing:"2px"},onclick:()=>setState({loggedIn:true,admin:false})},["👀 VER LA LIGA"]);
-    const b2=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".85rem",letterSpacing:"2px"},onclick:()=>{
-      const stored=localStorage.getItem(PIN_KEY);
-      setState({loginStep:stored?"enter":"setup",pin:"",loginErr:""});
-    }},["🔑 ACCESO ADMIN"]);
-    const note=h("p",{style:{color:muted,fontSize:".68rem",marginTop:"1rem"}},["Solo Felipe puede cargar fechas y resultados."]);
-    const p=h("p",{style:{color:muted,fontSize:".8rem",marginBottom:"1.2rem"}},["¿Cómo querés ingresar?"]);
-    inner=[p,b1,b2,note];
+    inner=[
+      h("p",{style:{color:muted,fontSize:".8rem",marginBottom:"1.2rem"}},["¿Cómo querés ingresar?"]),
+      h("button",{class:"btn",style:{background:"#1d4ed8",width:"100%",padding:".85rem",marginBottom:".75rem",letterSpacing:"2px"},onclick:()=>setState({loggedIn:true,admin:false})},["👀 VER LA LIGA"]),
+      h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".85rem",letterSpacing:"2px"},onclick:()=>{const s=localStorage.getItem(PIN_KEY);setState({loginStep:s?"enter":"setup",pin:"",loginErr:""});}},["🔑 ACCESO ADMIN"]),
+      h("p",{style:{color:muted,fontSize:".68rem",marginTop:"1rem"}},["Solo Felipe puede cargar fechas y resultados."]),
+    ];
   } else if(loginStep==="setup"){
-    const title=h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 CREÁ TU CONTRASEÑA"]);
-    const l1=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]);
     const i1=h("input",{class:"inp",type:"password",placeholder:"Mínimo 4 caracteres",value:pin,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin:e.target.value,loginErr:""})});
-    const l2=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONFIRMAR"]);
     const i2=h("input",{class:"inp",type:"password",placeholder:"Repetí",value:pin2,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin2:e.target.value,loginErr:""})});
-    const err=loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null;
-    const b=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem"},onclick:()=>{
-      if(STATE.pin.length<4){setState({loginErr:"Mínimo 4 caracteres"});return;}
-      if(STATE.pin!==STATE.pin2){setState({loginErr:"No coinciden"});return;}
-      localStorage.setItem(PIN_KEY,STATE.pin);
-      setState({loggedIn:true,admin:true});
-    }},["CREAR"]);
-    inner=[title,l1,i1,l2,i2,err,b];
+    inner=[
+      h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 CREÁ TU CONTRASEÑA"]),
+      h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]),i1,
+      h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONFIRMAR"]),i2,
+      loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null,
+      h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem"},onclick:()=>{
+        if(STATE.pin.length<4){setState({loginErr:"Mínimo 4 caracteres"});return;}
+        if(STATE.pin!==STATE.pin2){setState({loginErr:"No coinciden"});return;}
+        localStorage.setItem(PIN_KEY,STATE.pin);setState({loggedIn:true,admin:true});
+      }},["CREAR"]),
+    ];
   } else {
-    const title=h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 ACCESO ADMIN"]);
-    const l1=h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]);
     const i1=h("input",{class:"inp",type:"password",placeholder:"Tu contraseña",value:pin,style:{marginBottom:".75rem"},oninput:e=>Object.assign(STATE,{pin:e.target.value,loginErr:""})});
-    const err=loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null;
-    const b=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem",marginBottom:".5rem"},onclick:()=>{
-      const stored=localStorage.getItem(PIN_KEY);
-      if(STATE.pin===stored)setState({loggedIn:true,admin:true});
-      else setState({loginErr:"Contraseña incorrecta",pin:""});
-    }},["INGRESAR"]);
-    const back=h("button",{style:{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:".78rem",width:"100%"},onclick:()=>setState({loginStep:"choose",pin:"",loginErr:""})},["← Volver"]);
-    inner=[title,l1,i1,err,b,back];
+    inner=[
+      h("div",{class:"bc",style:{color:"#a78bfa",fontSize:".72rem",letterSpacing:"2px",marginBottom:"1rem"}},["🔑 ACCESO ADMIN"]),
+      h("label",{class:"lbl",style:{textAlign:"left",display:"block",marginBottom:".3rem"}},["CONTRASEÑA"]),i1,
+      loginErr?h("div",{style:{color:"#f87171",fontSize:".78rem",marginBottom:".75rem"}},[loginErr]):null,
+      h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".8rem",marginBottom:".5rem"},onclick:()=>{
+        const s=localStorage.getItem(PIN_KEY);
+        if(STATE.pin===s)setState({loggedIn:true,admin:true});
+        else setState({loginErr:"Contraseña incorrecta",pin:""});
+      }},["INGRESAR"]),
+      h("button",{style:{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:".78rem",width:"100%"},onclick:()=>setState({loginStep:"choose",pin:"",loginErr:""})},["← Volver"]),
+    ];
   }
-
   const box=h("div",{class:"card",style:{padding:"1.75rem",borderRadius:"16px"}},inner.filter(Boolean));
-  const wrap=h("div",{style:{textAlign:"center",width:"100%",maxWidth:"320px",padding:"1rem"}},[logo,sub,box]);
-  const page=h("div",{style:{minHeight:"100vh",background:bg,display:"flex",alignItems:"center",justifyContent:"center",backgroundImage:"radial-gradient(ellipse at 30% 40%, #0c1f3f 0%, transparent 60%)"}},[wrap]);
-  return page;
+  return h("div",{style:{minHeight:"100vh",background:bg,display:"flex",alignItems:"center",justifyContent:"center",backgroundImage:"radial-gradient(ellipse at 30% 40%, #0c1f3f 0%, transparent 60%)"}},[
+    h("div",{style:{textAlign:"center",width:"100%",maxWidth:"320px",padding:"1rem"}},[logo,sub,box])
+  ]);
 }
 
 function renderModal(){
-  const {modal,res,admin}=STATE;
+  const{modal,res,admin}=STATE;
   if(!modal)return null;
-  const {p1,p2,k}=modal;
+  const{p1,p2,k,gid}=modal;
   const d=res[k]||{};
   let fecha=d.fecha||"",hora=d.hora||"10:00",cancha=d.cancha||CANCHAS[0],resultado=d.resultado||"",ganador=d.ganador||"";
-  const color=GRUPOS[modal.gid].color;
-
+  const color=GRUPOS[gid].color;
   const overlay=h("div",{style:{position:"fixed",inset:0,background:"rgba(0,0,0,.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:"1rem"}});
-
   const box=h("div",{style:{background:card,border:`1px solid ${color}44`,borderRadius:"16px",padding:"1.5rem",width:"100%",maxWidth:"420px",maxHeight:"90vh",overflowY:"auto"}});
-
-  // header
   const closeBtn=h("button",{style:{background:"none",border:"none",color:muted,cursor:"pointer",fontSize:"1.4rem"},onclick:()=>setState({modal:null})},["✕"]);
-  const pTitle=h("div",{style:{color:text,fontWeight:600,fontSize:".9rem",lineHeight:1.6}},[p1,h("br"),h("span",{style:{color,fontSize:".75rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"2px"}},["VS"]),h("br",[]),p2]);
-  const hdr=h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"1.2rem"}},[pTitle,closeBtn]);
-
-  // fecha input
+  const pTitle=h("div",{style:{color:text,fontWeight:600,fontSize:".9rem",lineHeight:1.6}},[p1,h("br"),h("span",{style:{color,fontSize:".75rem",fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:"2px"}},["VS"]),h("br"),p2]);
   const inpFecha=h("input",{class:"inp",type:"date",value:fecha,oninput:e=>fecha=e.target.value});
   const inpHora=h("input",{class:"inp",type:"time",value:hora,oninput:e=>hora=e.target.value});
   const selCancha=h("select",{class:"inp",oninput:e=>cancha=e.target.value},CANCHAS.map(c=>{const o=h("option",{value:c},[c]);if(c===cancha)o.selected=true;return o;}));
-
-  const fechaSection=h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["FECHA"]),inpFecha]);
-  const grid=h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".75rem",marginBottom:"1rem"}},[
-    h("div",{},[h("label",{class:"lbl"},["HORA"]),inpHora]),
-    h("div",{},[h("label",{class:"lbl"},["CANCHA"]),selCancha]),
-  ]);
-
-  let resSection=null;
+  let resSection;
   if(admin){
-    const inpRes=h("input",{class:"inp",type:"text",placeholder:"Dejá vacío si aún no se jugó",value:resultado,oninput:e=>resultado=e.target.value});
+    const inpRes=h("input",{class:"inp",type:"text",placeholder:"Ej: 6-3 / 4-6 / 6-4",value:resultado,oninput:e=>resultado=e.target.value});
+    const hint=h("div",{style:{fontSize:".68rem",color:muted,marginTop:".3rem",fontFamily:"'Barlow Condensed',sans-serif"}},["⚠️ Primero los games del GANADOR · Separar sets con /"]);
     const btnP1=h("button",{class:"btn",style:{flex:1,fontSize:".78rem",padding:".5rem",background:ganador==="p1"?color:"#1a2840",border:`1px solid ${ganador==="p1"?color:border}`},onclick:()=>{ganador=ganador==="p1"?"":"p1";btnP1.style.background=ganador==="p1"?color:"#1a2840";btnP2.style.background=ganador==="p2"?color:"#1a2840";}},[p1.split("/")[0].trim()]);
     const btnP2=h("button",{class:"btn",style:{flex:1,fontSize:".78rem",padding:".5rem",background:ganador==="p2"?color:"#1a2840",border:`1px solid ${ganador==="p2"?color:border}`},onclick:()=>{ganador=ganador==="p2"?"":"p2";btnP1.style.background=ganador==="p1"?color:"#1a2840";btnP2.style.background=ganador==="p2"?color:"#1a2840";}},[p2.split("/")[0].trim()]);
     const borrarBtn=(d.resultado||d.ganador)?h("button",{class:"btn",style:{background:"#991b1b",width:"100%",fontSize:".78rem",padding:".5rem",marginTop:".5rem"},onclick:()=>saveRes(k,{fecha,hora,cancha,resultado:"",ganador:""})},["\uD83D\uDDD1\uFE0F BORRAR RESULTADO"]):null;
     resSection=h("div",{style:{borderTop:`1px solid ${border}`,paddingTop:"1rem",marginBottom:"1rem"}},[
       h("div",{class:"bc",style:{color,fontSize:".7rem",letterSpacing:"2px",marginBottom:".75rem"}},["RESULTADO (opcional)"]),
-      h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["SETS"]),inpRes]),
+      h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["SETS"]),inpRes,hint]),
       h("label",{class:"lbl"},["GANADOR"]),
       h("div",{style:{display:"flex",gap:".5rem",marginBottom:".5rem"}},[btnP1,btnP2]),
       borrarBtn,
@@ -277,87 +248,65 @@ function renderModal(){
   } else {
     resSection=h("p",{style:{color:muted,fontSize:".72rem",margin:".5rem 0 1rem"}},["🔒 Solo Felipe puede cargar resultados."]);
   }
-
   const saveBtn=h("button",{class:"btn",style:{background:color,flex:1},onclick:()=>saveRes(k,{fecha,hora,cancha,resultado,ganador})},["GUARDAR"]);
   const cancelBtn=h("button",{class:"btn",style:{background:"#1a2840",padding:".65rem 1rem"},onclick:()=>setState({modal:null})},["CANCELAR"]);
-  const footer=h("div",{style:{display:"flex",gap:".75rem"}},[saveBtn,cancelBtn]);
-
-  box.append(hdr,fechaSection,grid,resSection,footer);
+  box.append(
+    h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:"1.2rem"}},[pTitle,closeBtn]),
+    h("div",{style:{marginBottom:".75rem"}},[h("label",{class:"lbl"},["FECHA"]),inpFecha]),
+    h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:".75rem",marginBottom:"1rem"}},[h("div",{},[h("label",{class:"lbl"},["HORA"]),inpHora]),h("div",{},[h("label",{class:"lbl"},["CANCHA"]),selCancha])]),
+    resSection,
+    h("div",{style:{display:"flex",gap:".75rem"}},[saveBtn,cancelBtn])
+  );
   overlay.appendChild(box);
   overlay.onclick=e=>{if(e.target===overlay)setState({modal:null});};
   return overlay;
 }
 
 function renderApp(){
-  const {seccion,gid,fecha,tab,res,avisos,admin,modal}=STATE;
+  const{seccion,gid,fecha,tab,res,avisos,admin}=STATE;
   const g=GRUPOS[gid];
   const proximos=getProximos();
-
-  // Header
   const logoH=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"36px",height:"36px",objectFit:"contain"}});
-  const title=h("div",{},[
-    h("div",{class:"bc",style:{fontSize:"1.15rem",letterSpacing:"3px",fontWeight:800,lineHeight:1}},["LIGA PIRIA PÁDEL"]),
-    h("div",{style:{fontSize:".6rem",color:muted,letterSpacing:"3px",fontFamily:"'Barlow Condensed',sans-serif"}},["MARZO–MAYO 2026"]),
-  ]);
-  const adminBadge=admin?h("span",{class:"bc",style:{background:"#7c3aed22",border:"1px solid #7c3aed",color:"#a78bfa",padding:"2px 8px",borderRadius:"10px",fontSize:".65rem"}},["🔑 ADMIN"]):null;
-  const salirBtn=h("button",{style:{background:"none",border:`1px solid ${border}`,color:muted,padding:".2rem .5rem",borderRadius:"6px",cursor:"pointer",fontSize:".68rem"},onclick:()=>setState({loggedIn:false,admin:false,loginStep:"choose",pin:""})},[" Salir"]);
   const header=h("header",{style:{background:`${card}ee`,borderBottom:`1px solid ${border}`,padding:".8rem 1rem",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100}},[
-    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[logoH,title]),
-    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[adminBadge,salirBtn].filter(Boolean)),
+    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[logoH,h("div",{},[h("div",{class:"bc",style:{fontSize:"1.15rem",letterSpacing:"3px",fontWeight:800,lineHeight:1}},["LIGA PIRIA PÁDEL"]),h("div",{style:{fontSize:".6rem",color:muted,letterSpacing:"3px",fontFamily:"'Barlow Condensed',sans-serif"}},["MARZO–MAYO 2026"])])]),
+    h("div",{style:{display:"flex",alignItems:"center",gap:".6rem"}},[
+      admin?h("span",{class:"bc",style:{background:"#7c3aed22",border:"1px solid #7c3aed",color:"#a78bfa",padding:"2px 8px",borderRadius:"10px",fontSize:".65rem"}},["🔑 ADMIN"]):null,
+      h("button",{style:{background:"none",border:`1px solid ${border}`,color:muted,padding:".2rem .5rem",borderRadius:"6px",cursor:"pointer",fontSize:".68rem"},onclick:()=>setState({loggedIn:false,admin:false,loginStep:"choose",pin:""})},["Salir"]),
+    ].filter(Boolean)),
   ]);
-
-  // Nav tabs
-  const SECS=[
-    {id:"inicio",label:"🏠 INICIO"},
-    {id:"proximos",label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},
-    {id:"grupos",label:"🎾 GRUPOS"},
-    {id:"avisos",label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`},
-  ];
+  const SECS=[{id:"inicio",label:"🏠 INICIO"},{id:"proximos",label:`📅 PRÓXIMOS${proximos.length>0?" ("+proximos.length+")":""}`},{id:"grupos",label:"🎾 GRUPOS"},{id:"avisos",label:`📢 AVISOS${avisos.length>0?" ("+avisos.length+")":""}`}];
   const nav=h("div",{style:{background:card,borderBottom:`1px solid ${border}`,display:"flex",overflowX:"auto"}},
     SECS.map(s=>h("button",{style:{background:"none",border:"none",padding:".9rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem",letterSpacing:"1px",color:seccion===s.id?"#dbeafe":muted,borderBottom:seccion===s.id?"3px solid #3b82f6":"3px solid transparent",whiteSpace:"nowrap"},onclick:()=>setState({seccion:s.id})},[s.label]))
   );
-
-  // Content
   let content;
 
   if(seccion==="inicio"){
-    const logoB=h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"120px",height:"120px",objectFit:"contain",display:"block",margin:"0 auto 1rem"}});
     const stats=h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:".75rem",maxWidth:"500px",margin:"0 auto"}},
-      [["3","GRUPOS"],["24","PAREJAS"],["7","FECHAS"],["23 MAY","GRAN FINAL"]].map(([n,l])=>
-        h("div",{class:"card",style:{padding:"1rem",textAlign:"center"}},[
-          h("div",{class:"bc",style:{fontSize:"1.8rem",fontWeight:800,color:"#3b82f6"}},[n]),
-          h("div",{class:"bc",style:{color:muted,fontSize:".72rem",letterSpacing:"2px"}},[l]),
-        ])
-      )
+      [["3","GRUPOS"],["24","PAREJAS"],["7","FECHAS"],["23 MAY","GRAN FINAL"]].map(([n,l])=>h("div",{class:"card",style:{padding:"1rem",textAlign:"center"}},[h("div",{class:"bc",style:{fontSize:"1.8rem",fontWeight:800,color:"#3b82f6"}},[n]),h("div",{class:"bc",style:{color:muted,fontSize:".72rem",letterSpacing:"2px"}},[l])]))
     );
     const hero=h("div",{style:{textAlign:"center",padding:"2rem 1rem",marginBottom:"1.5rem"}},[
-      logoB,
+      h("img",{src:LOGO,onerror:"this.style.display='none'",style:{width:"120px",height:"120px",objectFit:"contain",display:"block",margin:"0 auto 1rem"}}),
       h("div",{class:"bc",style:{fontSize:"2rem",fontWeight:800,letterSpacing:"4px",marginBottom:".3rem"}},["LIGA PIRIA PÁDEL"]),
       h("div",{class:"bc",style:{color:muted,letterSpacing:"3px",fontSize:".8rem",marginBottom:"1.5rem"}},["TEMPORADA MARZO — MAYO 2026"]),
       stats,
     ]);
-
     const avisosSection=avisos.length>0?h("div",{style:{marginBottom:"1.5rem"}},[
       h("div",{class:"bc",style:{fontSize:"1rem",letterSpacing:"3px",color:"#a78bfa",marginBottom:".75rem"}},["📢 ÚLTIMOS AVISOS"]),
-      ...avisos.slice(0,2).map(a=>h("div",{class:"card",style:{marginBottom:".5rem",border:"1px solid #7c3aed33"}},[
-        h("div",{style:{fontSize:".65rem",color:muted,marginBottom:".3rem"}},[`📅 ${a.fecha}`]),
-        h("div",{style:{color:text,fontSize:".85rem"}},[a.texto]),
-      ])),
+      ...avisos.slice(0,2).map(a=>h("div",{class:"card",style:{marginBottom:".5rem",border:"1px solid #7c3aed33"}},[h("div",{style:{fontSize:".65rem",color:muted,marginBottom:".3rem"}},[`📅 ${a.fecha}`]),h("div",{style:{color:text,fontSize:".85rem"}},[a.texto])])),
     ]):null;
-
     const proximosSection=proximos.length>0?h("div",{},[
       h("div",{class:"bc",style:{fontSize:"1rem",letterSpacing:"3px",color:"#dbeafe",marginBottom:".75rem"}},["📅 PRÓXIMOS PARTIDOS"]),
       h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:".75rem"}},
         proximos.slice(0,4).map(p=>h("div",{class:"card",style:{border:`1px solid ${p.color}44`}},[
           h("div",{class:"bc",style:{fontSize:".65rem",color:p.color,marginBottom:".4rem"}},[`${p.label} · FECHA ${p.fi}`]),
-          h("div",{style:{fontSize:".85rem",lineHeight:1.5,marginBottom:".5rem"}},[
-            h("strong",{},[p.p1])," ",h("span",{style:{color:p.color}},["vs"])," ",h("strong",{},[p.p2])
-          ]),
-          h("div",{style:{fontSize:".75rem",color:muted}},[`📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`]),
+          h("div",{style:{fontSize:".85rem",lineHeight:1.5,marginBottom:".5rem"}},[h("strong",{},[p.p1])," ",h("span",{style:{color:p.color}},["vs"])," ",h("strong",{},[p.p2])]),
+          h("div",{style:{fontSize:".75rem",color:muted,display:"flex",alignItems:"center",gap:".4rem",flexWrap:"wrap"}},[
+            `📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`,
+            diasRestantes(p.fecha)?h("span",{style:{background:"#1d4ed822",color:"#60a5fa",padding:"1px 7px",borderRadius:"8px",fontSize:".72rem",fontFamily:"'Barlow Condensed',sans-serif"}},[diasRestantes(p.fecha)]):null,
+          ].filter(Boolean)),
         ]))
       ),
     ]):null;
-
     content=h("div",{},[hero,avisosSection,proximosSection].filter(Boolean));
   }
 
@@ -367,22 +316,16 @@ function renderApp(){
       ?h("div",{style:{textAlign:"center",padding:"2rem",color:muted}},["No hay partidos agendados todavía."])
       :h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:".9rem"}},
         lista.map(p=>h("div",{class:"card",style:{border:`1px solid ${p.color}44`}},[
-          h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[
-            h("span",{class:"bc",style:{fontSize:".65rem",background:p.color+"22",color:p.color,padding:"2px 8px",borderRadius:"10px"}},[p.label]),
-            h("span",{class:"bc",style:{fontSize:".65rem",color:muted}},["FECHA "+p.fi]),
-          ]),
+          h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[h("span",{class:"bc",style:{fontSize:".65rem",background:p.color+"22",color:p.color,padding:"2px 8px",borderRadius:"10px"}},[p.label]),h("span",{class:"bc",style:{fontSize:".65rem",color:muted}},["FECHA "+p.fi])]),
           h("div",{style:{fontSize:".88rem",lineHeight:1.6,marginBottom:".6rem"}},[h("strong",{},[p.p1]),h("br"),h("span",{class:"bc",style:{color:p.color,fontSize:".7rem",letterSpacing:"3px"}},["VS"]),h("br"),h("strong",{},[p.p2])]),
-          h("div",{style:{paddingTop:".6rem",borderTop:`1px solid ${border}`,fontSize:".78rem",color:muted}},[`📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`]),
+          h("div",{style:{paddingTop:".6rem",borderTop:`1px solid ${border}`,fontSize:".78rem",color:muted,display:"flex",alignItems:"center",gap:".4rem",flexWrap:"wrap"}},[
+            `📅 ${fmtFecha(p.fecha)} · 🕐 ${p.hora} · 🎾 ${(p.cancha||"").replace("Cancha ","C")}`,
+            diasRestantes(p.fecha)?h("span",{style:{background:"#1d4ed822",color:"#60a5fa",padding:"1px 7px",borderRadius:"8px",fontSize:".72rem",fontFamily:"'Barlow Condensed',sans-serif"}},[diasRestantes(p.fecha)]):null,
+          ].filter(Boolean)),
         ]))
       );
     content=h("div",{},[
-      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[
-        h("div",{style:{width:"4px",height:"32px",background:"#3b82f6",borderRadius:"2px"}}),
-        h("div",{},[
-          h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["PRÓXIMOS PARTIDOS"]),
-          h("div",{style:{color:muted,fontSize:".75rem"}},["Todos los partidos agendados ordenados por fecha"]),
-        ]),
-      ]),
+      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[h("div",{style:{width:"4px",height:"32px",background:"#3b82f6",borderRadius:"2px"}}),h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["PRÓXIMOS PARTIDOS"]),h("div",{style:{color:muted,fontSize:".75rem"}},["Todos los partidos agendados ordenados por fecha"])])]),
       cards,
     ]);
   }
@@ -391,62 +334,51 @@ function renderApp(){
     const gTabs=h("div",{style:{background:card,display:"flex",overflowX:"auto",marginBottom:"1.2rem",borderRadius:"10px"}},
       Object.entries(GRUPOS).map(([id,gr])=>h("button",{style:{background:"none",border:"none",padding:".8rem 1rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem",letterSpacing:"1.5px",color:gid===id?gr.color:muted,borderBottom:gid===id?`3px solid ${gr.color}`:"3px solid transparent",whiteSpace:"nowrap"},onclick:()=>setState({gid:id,fecha:1,tab:"cruces"})},[(id==="G+7"?"🟡":id==="G1+11"?"🔵":"🟢")+" "+gr.label]))
     );
-
-    // subtabs
     const subTabs=h("div",{style:{display:"flex",borderBottom:`1px solid ${border}`,marginBottom:"1.5rem"}},[
       h("button",{style:{background:"none",border:"none",padding:".75rem 1.2rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".9rem",letterSpacing:"2px",color:tab==="cruces"?g.color:muted,borderBottom:tab==="cruces"?`2px solid ${g.color}`:"2px solid transparent"},onclick:()=>setState({tab:"cruces"})},["📅 CRUCES"]),
       h("button",{style:{background:"none",border:"none",padding:".75rem 1.2rem",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".9rem",letterSpacing:"2px",color:tab==="tabla"?g.color:muted,borderBottom:tab==="tabla"?`2px solid ${g.color}`:"2px solid transparent"},onclick:()=>setState({tab:"tabla"})},["🏆 TABLA"]),
     ]);
-
     let tabContent;
     if(tab==="tabla"){
       const rows=calcTabla(gid);
       tabContent=h("div",{style:{overflowX:"auto"}},[
-        h("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:"360px"}},[
-          h("thead",{},[h("tr",{},["#","PAREJA","PJ","PG","PP","PTS"].map(hd=>h("th",{style:{padding:".5rem .6rem",textAlign:hd==="PAREJA"?"left":"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".72rem",letterSpacing:"2px",color:muted,borderBottom:`1px solid ${border}`}},[hd])))]),
-          h("tbody",{},rows.map(({p,PJ,PG,PP,PTS},i)=>h("tr",{style:{borderBottom:`1px solid ${border}22`,background:i===0?g.color+"22":i===1?g.color+"11":"transparent"}},[
+        h("table",{style:{width:"100%",borderCollapse:"collapse",minWidth:"400px"}},[
+          h("thead",{},[h("tr",{},["#","PAREJA","PJ","PG","PP","PR","PTS"].map(hd=>h("th",{style:{padding:".5rem .6rem",textAlign:hd==="PAREJA"?"left":"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".72rem",letterSpacing:"2px",color:muted,borderBottom:`1px solid ${border}`}},[hd])))]),
+          h("tbody",{},rows.map(({p,PJ,PG,PP,PR,PTS},i)=>h("tr",{style:{borderBottom:`1px solid ${border}22`,background:i===0?g.color+"22":i===1?g.color+"11":"transparent"}},[
             h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:i<2?g.color:muted,fontFamily:"'Barlow Condensed',sans-serif",fontWeight:700,fontSize:"1.1rem"}},[i===0?"🥇":i===1?"🥈":String(i+1)]),
             h("td",{style:{padding:".5rem .6rem",color:i<2?text:muted,fontSize:".82rem",fontWeight:i<2?"700":"400"}},[p+(i<2?" ✓":"")]),
             h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:muted,fontSize:".82rem"}},[String(PJ)]),
             h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:"#4ade80",fontSize:".82rem"}},[String(PG)]),
             h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:"#f87171",fontSize:".82rem"}},[String(PP)]),
+            h("td",{style:{padding:".5rem .6rem",textAlign:"center",color:"#60a5fa",fontSize:".82rem"}},[String(PR)]),
             h("td",{style:{padding:".5rem .6rem",textAlign:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:"1.1rem",fontWeight:700,color:g.color}},[String(PTS)]),
           ]))),
         ]),
-        h("div",{style:{marginTop:".75rem",fontSize:".7rem",color:muted,fontFamily:"'Barlow Condensed',sans-serif"}},["🏆 Los 2 primeros clasifican a la Gran Final"]),
+        h("div",{style:{marginTop:".75rem",fontSize:".7rem",color:muted,fontFamily:"'Barlow Condensed',sans-serif"}},["🏆 Los 2 primeros clasifican a la Gran Final · PR = Partidos Restantes"]),
       ]);
     } else {
       const fBtns=h("div",{style:{display:"flex",gap:".4rem",flexWrap:"wrap",marginBottom:"1.2rem"}},
         g.cruces.map((_,i)=>h("button",{style:{background:fecha===i+1?g.color:card,color:fecha===i+1?"white":muted,border:`1px solid ${fecha===i+1?g.color:border}`,padding:".3rem .8rem",borderRadius:"20px",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:".82rem"},onclick:()=>setState({fecha:i+1})},["F"+(i+1)]))
       );
-      const cards=h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:".9rem"}},
+      const cardsGrid=h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:".9rem"}},
         g.cruces[fecha-1].map(([p1,p2],ci)=>{
           const k=cid(gid,fecha,ci);
           const d=res[k]||{};
           const jugado=!!(d.resultado&&d.resultado.trim()&&d.ganador);
           const agendado=!!d.fecha&&!jugado;
-          const card2=h("div",{style:{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:"12px",padding:"1rem",cursor:admin?"pointer":"default",transition:"transform .15s"}},[
-            h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[
-              h("span",{class:"bc",style:{fontSize:".72rem",letterSpacing:"2px",color:muted}},["FECHA "+fecha]),
-              h("span",{class:"bc",style:{fontSize:".62rem",background:jugado?g.color:agendado?g.color+"33":border,color:jugado?"white":agendado?g.color:muted,padding:"2px 8px",borderRadius:"10px"}},[jugado?"✓ JUGADO":agendado?"📅 AGENDADO":"SIN FECHA"]),
-            ]),
-            h("div",{style:{fontSize:".88rem",lineHeight:1.6}},[
-              h("div",{style:{fontWeight:600,color:d.ganador==="p1"?g.color:text}},[p1]),
-              h("div",{class:"bc",style:{color:g.color,fontSize:".7rem",letterSpacing:"3px",margin:"2px 0"}},["VS"]),
-              h("div",{style:{fontWeight:600,color:d.ganador==="p2"?g.color:text}},[p2]),
-            ]),
+          const c2=h("div",{style:{background:card,border:`1px solid ${jugado?g.color+"88":agendado?g.color+"44":border}`,borderRadius:"12px",padding:"1rem",cursor:admin?"pointer":"default",transition:"transform .15s"}},[
+            h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".6rem"}},[h("span",{class:"bc",style:{fontSize:".72rem",letterSpacing:"2px",color:muted}},["FECHA "+fecha]),h("span",{class:"bc",style:{fontSize:".62rem",background:jugado?g.color:agendado?g.color+"33":border,color:jugado?"white":agendado?g.color:muted,padding:"2px 8px",borderRadius:"10px"}},[jugado?"✓ JUGADO":agendado?"📅 AGENDADO":"SIN FECHA"])]),
+            h("div",{style:{fontSize:".88rem",lineHeight:1.6}},[h("div",{style:{fontWeight:600,color:d.ganador==="p1"?g.color:text}},[p1]),h("div",{class:"bc",style:{color:g.color,fontSize:".7rem",letterSpacing:"3px",margin:"2px 0"}},["VS"]),h("div",{style:{fontWeight:600,color:d.ganador==="p2"?g.color:text}},[p2])]),
             agendado?h("div",{style:{marginTop:".6rem",paddingTop:".6rem",borderTop:`1px solid ${border}`,fontSize:".78rem",color:muted}},[`📅 ${fmtFecha(d.fecha)} · 🕐 ${d.hora} · 🎾 ${(d.cancha||"").replace("Cancha ","C")}`]):null,
             jugado?h("div",{class:"bc",style:{marginTop:".4rem",fontSize:".82rem",color:g.color}},[d.resultado]):null,
             admin?h("div",{class:"bc",style:{marginTop:".5rem",fontSize:".68rem",color:muted}},["✏️ Tocá para editar"]):null,
           ].filter(Boolean));
-          if(admin)card2.onclick=()=>setState({modal:{p1,p2,k,gid}});
-          if(admin){card2.onmouseenter=()=>card2.style.transform="translateY(-2px)";card2.onmouseleave=()=>card2.style.transform="translateY(0)";}
-          return card2;
+          if(admin){c2.onclick=()=>setState({modal:{p1,p2,k,gid}});c2.onmouseenter=()=>c2.style.transform="translateY(-2px)";c2.onmouseleave=()=>c2.style.transform="translateY(0)";}
+          return c2;
         })
       );
-      tabContent=h("div",{},[fBtns,cards]);
+      tabContent=h("div",{},[fBtns,cardsGrid]);
     }
-
     const readNote=!admin?h("div",{style:{background:"#1a284088",border:`1px solid ${border}`,borderRadius:"10px",padding:".6rem 1rem",marginBottom:"1rem",fontSize:".78rem",color:muted}},["👁 Modo lectura — Solo Felipe puede cargar fechas y resultados."]):null;
     content=h("div",{},[gTabs,h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[h("div",{style:{width:"4px",height:"32px",background:g.color,borderRadius:"2px"}}),h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},[g.label.toUpperCase()]),h("div",{style:{color:muted,fontSize:".75rem"}},["8 parejas · 7 fechas · Final 23 de Mayo"])])]),readNote,subTabs,tabContent].filter(Boolean));
   }
@@ -455,66 +387,56 @@ function renderApp(){
     let avisoContent=[];
     if(admin){
       const ta=h("textarea",{class:"inp",placeholder:"Escribí un aviso para los jugadores...",style:{minHeight:"80px",resize:"vertical",marginBottom:".75rem"}});
-      const pubBtn=h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".7rem"},onclick:()=>{
-        if(!ta.value.trim())return;
-        const fecha=new Date().toLocaleDateString("es-UY");
-        saveAvisos([{texto:ta.value.trim(),fecha},...STATE.avisos]);
-        ta.value="";
-      }},["📢 PUBLICAR AVISO"]);
       avisoContent.push(h("div",{class:"card",style:{border:"1px solid #7c3aed44",marginBottom:"1.2rem"}},[
-        h("label",{class:"lbl",style:{color:"#a78bfa",marginBottom:".5rem"}},["NUEVO AVISO"]),ta,pubBtn
+        h("label",{class:"lbl",style:{color:"#a78bfa",marginBottom:".5rem"}},["NUEVO AVISO"]),ta,
+        h("button",{class:"btn",style:{background:"#7c3aed",width:"100%",padding:".7rem"},onclick:()=>{
+          if(!ta.value.trim())return;
+          const fecha=new Date().toLocaleDateString("es-UY");
+          saveAvisos([{texto:ta.value.trim(),fecha},...STATE.avisos]);
+          ta.value="";
+        }},["📢 PUBLICAR AVISO"]),
       ]));
     }
     if(avisos.length===0){
       avisoContent.push(h("div",{style:{textAlign:"center",padding:"2rem",color:muted}},["No hay avisos publicados."]));
     } else {
       avisos.forEach((a,i)=>{
-        const borrar=h("button",{style:{background:"none",border:"none",color:"#f87171",cursor:"pointer",fontSize:".8rem"},onclick:()=>saveAvisos(avisos.filter((_,idx)=>idx!==i))},["🗑️"]);
-        const card3=h("div",{class:"card",style:{marginBottom:".75rem"}},[
+        avisoContent.push(h("div",{class:"card",style:{marginBottom:".75rem"}},[
           h("div",{style:{display:"flex",justifyContent:"space-between",marginBottom:".4rem"}},[
             h("span",{class:"bc",style:{fontSize:".65rem",color:muted,letterSpacing:"1px"}},[`📅 ${a.fecha}`]),
-            admin?borrar:null,
+            admin?h("button",{style:{background:"none",border:"none",color:"#f87171",cursor:"pointer",fontSize:".8rem"},onclick:()=>saveAvisos(avisos.filter((_,idx)=>idx!==i))},["🗑️"]):null,
           ].filter(Boolean)),
           h("div",{style:{color:text,fontSize:".88rem",lineHeight:1.6,whiteSpace:"pre-wrap"}},[a.texto]),
-        ]);
-        avisoContent.push(card3);
+        ]));
       });
     }
     content=h("div",{},[
-      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[
-        h("div",{style:{width:"4px",height:"32px",background:"#a78bfa",borderRadius:"2px"}}),
-        h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["TABLÓN DE AVISOS"]),h("div",{style:{color:muted,fontSize:".75rem"}},["Comunicados y novedades de la liga"])]),
-      ]),
+      h("div",{style:{display:"flex",alignItems:"center",gap:".75rem",marginBottom:"1.2rem"}},[h("div",{style:{width:"4px",height:"32px",background:"#a78bfa",borderRadius:"2px"}}),h("div",{},[h("h2",{class:"bc",style:{fontSize:"1.4rem",letterSpacing:"3px",fontWeight:700}},["TABLÓN DE AVISOS"]),h("div",{style:{color:muted,fontSize:".75rem"}},["Comunicados y novedades de la liga"])])]),
       ...avisoContent,
     ]);
   }
 
-  const main=h("div",{style:{padding:"1.2rem",maxWidth:"1100px",margin:"0 auto"}},[content]);
-  const footer=h("div",{class:"bc",style:{textAlign:"center",padding:"1.5rem",color:muted,fontSize:".72rem",letterSpacing:"2px"}},["⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐"]);
   const modalEl=renderModal();
-
-  const page=h("div",{style:{minHeight:"100vh"}},[header,nav,main,footer,modalEl].filter(Boolean));
-  return page;
+  return h("div",{style:{minHeight:"100vh"}},[
+    header,nav,
+    h("div",{style:{padding:"1.2rem",maxWidth:"1100px",margin:"0 auto"}},[content]),
+    h("div",{class:"bc",style:{textAlign:"center",padding:"1.5rem",color:muted,fontSize:".72rem",letterSpacing:"2px"}},["⭐ GRAN FINAL — 23 DE MAYO DE 2026 ⭐"]),
+    modalEl,
+  ].filter(Boolean));
 }
 
 function render(){
   const app=document.getElementById("app");
   app.innerHTML="";
-  if(!STATE.loggedIn){app.appendChild(renderLogin());}
-  else{app.appendChild(renderApp());}
+  app.appendChild(STATE.loggedIn?renderApp():renderLogin());
 }
 
-// ── Init ──────────────────────────────────────────────
 async function init(){
-  // Escuchar Firebase en tiempo real
   fbListen("resultados",val=>{try{STATE.res=JSON.parse(val);render();}catch{}});
   fbListen("avisos",val=>{try{STATE.avisos=JSON.parse(val);render();}catch{}});
-
-  // Cargar datos iniciales
-  const [r,a]=await Promise.all([fbGet("resultados"),fbGet("avisos")]);
+  const[r,a]=await Promise.all([fbGet("resultados"),fbGet("avisos")]);
   if(r)try{STATE.res=JSON.parse(r);}catch{}
   if(a)try{STATE.avisos=JSON.parse(a);}catch{}
-
   document.getElementById("loading").style.display="none";
   document.getElementById("app").classList.remove("hidden");
   render();
